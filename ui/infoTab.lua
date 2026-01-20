@@ -66,37 +66,3 @@ home:Paragraph({
         }
     }
 })
-
-home:Divider()
-
--- =========================================================
--- WHAT'S NEW
--- =========================================================
-home:Section({
-    Title = "What's New?",
-    TextSize = 24,
-    FontWeight = Enum.FontWeight.SemiBold,
-})
-
-home:Image({
-    Image = InfoAPI.Discord.Image,
-    AspectRatio = "16:9",
-    Radius = 9,
-})
-
-home:Space()
-
-home:Paragraph({
-    Title = "Current Version",
-    Desc  = InfoAPI:GetVersionString(),
-})
-
-home:Paragraph({
-    Title = "Before Update",
-    Desc  = InfoAPI:FormatList(InfoAPI.Changelog.BeforeUpdate, "[~] "),
-})
-
-home:Paragraph({
-    Title = "Stable Update",
-    Desc  = InfoAPI:FormatList(InfoAPI.Changelog.StableUpdate, "[+] "),
-})

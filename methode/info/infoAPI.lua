@@ -1,66 +1,67 @@
 -- =========================================================
--- NYXHUB INFO API
--- MODE: IMPLEMENTASI_KETAT
+-- INFO API
+-- NYXHUB - Fish It
 -- =========================================================
 
 local InfoAPI = {}
 
--- ---------- Internal ----------
-local startTime = os.clock()
+-- =========================================================
+-- STATIC DATA
+-- =========================================================
 
-local function getExecutor()
-    if identifyexecutor then
-        local ok, name = pcall(identifyexecutor)
-        if ok then return name end
-    end
-    return "Unknown Executor"
-end
+InfoAPI.Discord = {
+    Name   = "NYXHUB Community",
+    Invite = "https://discord.gg/gW9jjJjH",
+    Image  = "rbxassetid://137263312772667"
+}
 
--- ---------- Public API ----------
-function InfoAPI:GetVersion()
-    return (_G.NYXHUB and _G.NYXHUB.Version) or "Unknown"
-end
+InfoAPI.Version = {
+    Name    = "1.0.3",
+    Date    = "11 Des 2025",
+    Type    = "Freemium"
+}
 
-function InfoAPI:GetUptime()
-    local t = math.floor(os.clock() - startTime)
-    local h = math.floor(t / 3600)
-    local m = math.floor((t % 3600) / 60)
-    local s = t % 60
-    return string.format("%02dh %02dm %02ds", h, m, s)
-end
+InfoAPI.Changelog = {
+    BeforeUpdate = {
+        "Fix 3D Rendering Force Close Issue",
+        "Fix Teleport & Freeze Detect Old Position",
+        "Improve Load UI",
+        "Add Freeze Player",
+        "Add Detect Enchant Perfection On Blatant Mode",
+        "Add Auto Spawn 9 Totem",
+        "Bring Back 3 Setting On Blatant Mode",
+    },
 
-function InfoAPI:GetExecutor()
-    return getExecutor()
-end
-
-function InfoAPI:IsReady()
-    return _G.NYXHUB and _G.NYXHUB.Flags and _G.NYXHUB.Flags.Ready == true
-end
-
-function InfoAPI:GetLoadedModulesCount()
-    local count = 0
-    if _G.NYXHUB and _G.NYXHUB.Modules then
-        for _, group in pairs(_G.NYXHUB.Modules) do
-            if type(group) == "table" then
-                for _ in pairs(group) do
-                    count += 1
-                end
-            end
-        end
-    end
-    return count
-end
-
-function InfoAPI:GetSessionInfo()
-    return {
-        Version = InfoAPI:GetVersion(),
-        Executor = InfoAPI:GetExecutor(),
-        Ready = InfoAPI:IsReady(),
-        Modules = InfoAPI:GetLoadedModulesCount(),
-        Uptime = InfoAPI:GetUptime(),
-        Player = game:GetService("Players").LocalPlayer.Name,
-        PlaceId = game.PlaceId,
+    StableUpdate = {
+        "Load UI More Faster",
+        "Add Back Old Cast Method Blatant Mode",
     }
+}
+
+-- =========================================================
+-- ACTIONS
+-- =========================================================
+
+function InfoAPI.CopyDiscord()
+    if setclipboard then
+        setclipboard(InfoAPI.Discord.Invite)
+        return true
+    end
+    return false
+end
+
+function InfoAPI:GetVersionString()
+    return string.format(
+        "Version %s\n- %s Release %s",
+        self.Version.Name,
+        self.Version.Date,
+        self.Version.Type
+    )
+end
+
+function InfoAPI:FormatList(list, prefix)
+    prefix = prefix or "- "
+    return prefix .. table.concat(list, "\n" .. prefix)
 end
 
 return InfoAPI

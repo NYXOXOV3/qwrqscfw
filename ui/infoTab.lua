@@ -26,80 +26,87 @@ if not InfoAPI then
 end
 
 -- =========================================================
--- TAB SETUP
+-- INFO TAB (UI ONLY)
 -- =========================================================
-local tab = Window:Tab({
-    Title = "Info",
-    Icon = "info",
-    Locked = false,
-})
+    local home = Window:Tab({
+        Title  = "Info",
+        Icon   = "info",
+        Locked = false,
+    })
 
-tab:Select()
+    home:Select()
 
-tab:Section({
-    Title = "NYXHUB Information",
-    TextSize = 20,
-})
+    -- =====================================================
+    -- DISCORD
+    -- =====================================================
 
--- =========================================================
--- STATIC INFO
--- =========================================================
-local session = InfoAPI:GetSessionInfo()
+    home:Section({
+        Title = "Join Discord Server NYXHUB",
+        TextSize = 18,
+    })
 
-tab:Paragraph({
-    Title = "Version",
-    Desc = tostring(session.Version),
-})
+    home:Paragraph({
+        Title = InfoAPI.Discord.Name,
+        Desc  = "Join our community Discord for updates, support, and discussion.",
+        Image = InfoAPI.Discord.Image,
+        ImageSize = 24,
+        Buttons = {
+            {
+                Title = "Copy Link",
+                Icon  = "link",
+                Callback = function()
+                    if InfoAPI.CopyDiscord() then
+                        WindUI:Notify({
+                            Title = "Link Copied",
+                            Content = "Discord invite copied to clipboard",
+                            Duration = 3,
+                            Icon = "copy",
+                        })
+                    else
+                        WindUI:Notify({
+                            Title = "Failed",
+                            Content = "Clipboard not supported by executor",
+                            Duration = 3,
+                            Icon = "x",
+                        })
+                    end
+                end,
+            }
+        }
+    })
 
-tab:Paragraph({
-    Title = "Executor",
-    Desc = tostring(session.Executor),
-})
+    home:Divider()
 
-tab:Paragraph({
-    Title = "Player",
-    Desc = tostring(session.Player),
-})
+    -- =====================================================
+    -- WHAT'S NEW
+    -- =====================================================
 
-tab:Paragraph({
-    Title = "Place ID",
-    Desc = tostring(session.PlaceId),
-})
+    home:Section({
+        Title = "What's New?",
+        TextSize = 24,
+        FontWeight = Enum.FontWeight.SemiBold,
+    })
 
-tab:Paragraph({
-    Title = "Modules Loaded",
-    Desc = tostring(session.Modules),
-})
+    home:Image({
+        Image = InfoAPI.Discord.Image,
+        AspectRatio = "16:9",
+        Radius = 9,
+    })
 
--- =========================================================
--- LIVE UPTIME
--- =========================================================
-tab:Divider()
+    home:Space()
 
-local uptimeLabel = tab:Paragraph({
-    Title = "Session Uptime",
-    Desc = "00h 00m 00s",
-})
+    home:Paragraph({
+        Title = "Current Version",
+        Desc  = InfoAPI:GetVersionString(),
+    })
 
--- Update uptime tiap 1 detik (ringan)
-task.spawn(function()
-    while _G.NYXHUB and _G.NYXHUB.Flags and _G.NYXHUB.Flags.Ready do
-        pcall(function()
-            uptimeLabel:Set({
-                Title = "Session Uptime",
-                Desc = InfoAPI:GetUptime(),
-            })
-        end)
-        task.wait(1)
-    end
-end)
+    home:Paragraph({
+        Title = "Before Update",
+        Desc  = InfoAPI:FormatList(InfoAPI.Changelog.BeforeUpdate, "[~] "),
+    })
 
--- =========================================================
--- STATUS
--- =========================================================
-tab:Divider()
-
-tab:Paragraph({
-    Title = "System Status",
-    Desc = InfoAPI:IsReady() and "✅ NYXHUB Ready" or "⚠️ Not Ready",
-})
+    home:Paragraph({
+        Title = "Stable Update",
+        Desc  = InfoAPI:FormatList(InfoAPI.Changelog.StableUpdate, "[+] "),
+    })
+end

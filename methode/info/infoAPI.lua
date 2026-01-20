@@ -1,6 +1,7 @@
 -- =========================================================
 -- INFO API
 -- NYXHUB - Fish It
+-- MODE: IMPLEMENTASI_KETAT
 -- =========================================================
 
 local InfoAPI = {}
@@ -12,13 +13,13 @@ local InfoAPI = {}
 InfoAPI.Discord = {
     Name   = "NYXHUB Community",
     Invite = "https://discord.gg/gW9jjJjH",
-    Image  = "rbxassetid://137263312772667"
+    Image  = "rbxassetid://137263312772667",
 }
 
 InfoAPI.Version = {
-    Name    = "1.0.3",
-    Date    = "11 Des 2025",
-    Type    = "Freemium"
+    Name = "1.0.3",
+    Date = "11 Des 2025",
+    Type = "Freemium",
 }
 
 InfoAPI.Changelog = {
@@ -31,15 +32,14 @@ InfoAPI.Changelog = {
         "Add Auto Spawn 9 Totem",
         "Bring Back 3 Setting On Blatant Mode",
     },
-
     StableUpdate = {
         "Load UI More Faster",
         "Add Back Old Cast Method Blatant Mode",
-    }
+    },
 }
 
 -- =========================================================
--- ACTIONS
+-- ACTIONS / HELPERS
 -- =========================================================
 
 function InfoAPI.CopyDiscord()
@@ -61,6 +61,9 @@ end
 
 function InfoAPI:FormatList(list, prefix)
     prefix = prefix or "- "
+    if type(list) ~= "table" then
+        return prefix .. tostring(list)
+    end
     return prefix .. table.concat(list, "\n" .. prefix)
 end
 

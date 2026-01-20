@@ -24,6 +24,7 @@ local Window = WindUI:CreateWindow({
     Theme = "Violet",
     Resizable = true,
     SideBarWidth = 190,
+    Transparent = true,
 })
 Window:SetToggleKey(Enum.KeyCode.G)
 Window:Tag({

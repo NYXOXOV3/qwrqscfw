@@ -245,81 +245,166 @@ function VisualAPI.ToggleESP(state)
 end
 
 -- =========================================================
--- 5. NYX PING & CPU PANEL
+-- 5. NYX PING & CPU PANEL (NYX STYLE + DRAGGABLE)
 -- =========================================================
 
-VisualAPI.PingPanel = { Visible = false, GUI = nil, Conn = nil }
+VisualAPI.PingPanel = {
+    Visible = false,
+    GUI = nil,
+    Conn = nil,
+}
+
+-- ================= INTERNAL =================
 
 local function createPingPanel()
     local old = CoreGui:FindFirstChild("NYXPingPanel")
     if old then old:Destroy() end
 
-    local sg = Instance.new("ScreenGui", CoreGui)
+    local sg = Instance.new("ScreenGui")
     sg.Name = "NYXPingPanel"
     sg.ResetOnSpawn = false
     sg.IgnoreGuiInset = true
     sg.DisplayOrder = 999999
+    sg.Parent = CoreGui
 
-    local c = Instance.new("Frame", sg)
-    c.Size = UDim2.new(0,210,0,74)
-    c.Position = UDim2.new(0.5,-105,0,60)
-    c.BackgroundColor3 = Color3.fromRGB(12,14,18)
-    c.BackgroundTransparency = 0.25
-    c.Visible = false
-    Instance.new("UICorner", c).CornerRadius = UDim.new(0,10)
-    local stroke = Instance.new("UIStroke", c)
-    stroke.Color = Color3.fromRGB(255,140,50)
-    stroke.Transparency = 0.6
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(0, 220, 0, 78)
+    container.Position = UDim2.new(0.5, -110, 0, 70)
+    container.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+    container.BackgroundTransparency = 0.18
+    container.BorderSizePixel = 0
+    container.Visible = false
+    container.Parent = sg
 
-    local header = Instance.new("Frame", c)
-    header.Size = UDim2.new(1,0,0,32)
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+
+    local stroke = Instance.new("UIStroke", container)
+    stroke.Color = Color3.fromRGB(255, 140, 50) -- NYX ORANGE
+    stroke.Thickness = 1.5
+    stroke.Transparency = 0.35
+
+    -- ================= HEADER =================
+    local header = Instance.new("Frame", container)
+    header.Size = UDim2.new(1, 0, 0, 34)
     header.BackgroundTransparency = 1
 
+    local logo = Instance.new("ImageLabel", header)
+    logo.Size = UDim2.new(0, 22, 0, 22)
+    logo.Position = UDim2.new(0, 10, 0, 6)
+    logo.BackgroundTransparency = 1
+    logo.Image = "rbxassetid://118176705805619" -- LOGO NYX
+    logo.ImageTransparency = 0.1
+
+    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
+
     local title = Instance.new("TextLabel", header)
-    title.Position = UDim2.new(0,36,0,0)
-    title.Size = UDim2.new(1,-40,1,0)
+    title.Position = UDim2.new(0, 40, 0, 0)
+    title.Size = UDim2.new(1, -50, 1, 0)
     title.BackgroundTransparency = 1
     title.Text = "NYX PANEL"
     title.Font = Enum.Font.GothamBold
     title.TextSize = 13
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.TextColor3 = Color3.fromRGB(255,140,50)
+    title.TextColor3 = Color3.fromRGB(255, 140, 50)
 
-    local content = Instance.new("Frame", c)
-    content.Position = UDim2.new(0,8,0,36)
-    content.Size = UDim2.new(1,-16,1,-42)
+    -- ================= CONTENT =================
+    local content = Instance.new("Frame", container)
+    content.Position = UDim2.new(0, 10, 0, 38)
+    content.Size = UDim2.new(1, -20, 1, -44)
     content.BackgroundTransparency = 1
 
     local ping = Instance.new("TextLabel", content)
-    ping.Size = UDim2.new(0.5,-6,1,0)
+    ping.Size = UDim2.new(0.5, -6, 1, 0)
     ping.BackgroundTransparency = 1
     ping.Font = Enum.Font.GothamBold
     ping.TextSize = 13
+    ping.Text = "Ping: -- ms"
+    ping.TextColor3 = Color3.fromRGB(255, 200, 120)
 
     local cpu = Instance.new("TextLabel", content)
-    cpu.Position = UDim2.new(0.5,6,0,0)
-    cpu.Size = UDim2.new(0.5,-6,1,0)
+    cpu.Position = UDim2.new(0.5, 6, 0, 0)
+    cpu.Size = UDim2.new(0.5, -6, 1, 0)
     cpu.BackgroundTransparency = 1
     cpu.Font = Enum.Font.GothamBold
     cpu.TextSize = 13
+    cpu.Text = "CPU: --%"
+    cpu.TextColor3 = Color3.fromRGB(150, 255, 180)
 
-    return { ScreenGui = sg, Container = c, Ping = ping, CPU = cpu }
+    -- ================= DRAG LOGIC =================
+    local dragging, dragStart, startPos
+    local UIS = game:GetService("UserInputService")
+
+    header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = container.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            container.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    return {
+        ScreenGui = sg,
+        Container = container,
+        Ping = ping,
+        CPU = cpu
+    }
 end
+
+-- ================= PUBLIC =================
 
 function VisualAPI.TogglePingPanel(state)
     if state and not VisualAPI.PingPanel.Visible then
         if not VisualAPI.PingPanel.GUI then
             VisualAPI.PingPanel.GUI = createPingPanel()
         end
+
         local g = VisualAPI.PingPanel.GUI
         g.Container.Visible = true
         VisualAPI.PingPanel.Visible = true
 
         VisualAPI.PingPanel.Conn = RunService.Heartbeat:Connect(function()
             if not VisualAPI.PingPanel.Visible then return end
-            g.Ping.Text = "Ping: " .. math.floor(LocalPlayer:GetNetworkPing()*1000) .. " ms"
-            local cpu = math.random(20,45)
+
+            local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+            g.Ping.Text = "Ping: " .. ping .. " ms"
+
+            if ping <= 60 then
+                g.Ping.TextColor3 = Color3.fromRGB(120, 255, 160)
+            elseif ping <= 120 then
+                g.Ping.TextColor3 = Color3.fromRGB(255, 210, 120)
+            else
+                g.Ping.TextColor3 = Color3.fromRGB(255, 120, 120)
+            end
+
+            local cpu = math.random(20, 45)
             g.CPU.Text = "CPU: " .. cpu .. "%"
+            if cpu <= 40 then
+                g.CPU.TextColor3 = Color3.fromRGB(140, 255, 180)
+            elseif cpu <= 70 then
+                g.CPU.TextColor3 = Color3.fromRGB(255, 200, 120)
+            else
+                g.CPU.TextColor3 = Color3.fromRGB(255, 120, 120)
+            end
         end)
 
     elseif not state and VisualAPI.PingPanel.Visible then

@@ -170,28 +170,33 @@ function VisualAPI.ToggleFPSBoost(state)
 end
 
 -- =========================================================
--- 3. UNLOCK FPS
+-- 3. UNLOCK FPS (DROPDOWN + TOGGLE)
 -- =========================================================
 
 VisualAPI.UnlockFPS = {
     Enabled = false,
-    Current = 60,
-    Caps = {60, 90, 120, 240}
+    Selected = 60,
+    Caps = {30, 60, 90, 120, 144, 165, 240}
 }
 
 function VisualAPI.SetFPSCap(fps)
-    if setfpscap then
+    VisualAPI.UnlockFPS.Selected = fps
+
+    -- JANGAN langsung apply kalau toggle belum ON
+    if VisualAPI.UnlockFPS.Enabled and setfpscap then
         setfpscap(fps)
-        VisualAPI.UnlockFPS.Current = fps
     end
 end
 
 function VisualAPI.ToggleUnlockFPS(state)
     VisualAPI.UnlockFPS.Enabled = state
-    if state then
-        VisualAPI.SetFPSCap(VisualAPI.UnlockFPS.Current)
-    else
-        if setfpscap then setfpscap(60) end
+
+    if setfpscap then
+        if state then
+            setfpscap(VisualAPI.UnlockFPS.Selected)
+        else
+            setfpscap(60)
+        end
     end
 end
 
@@ -283,6 +288,12 @@ VisualAPI.PingPanel = {
 -- ================= INTERNAL =================
 
 local function createPingPanelGUI()
+    local old = CoreGui:FindFirstChild("NYXPingPanel")
+    if old then
+        old:Destroy()
+        task.wait()
+    end
+    
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "NYXPingPanel"
     screenGui.ResetOnSpawn = false

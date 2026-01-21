@@ -222,9 +222,10 @@ tab:Toggle({
 
 tab:Toggle({
     Title = "Ping Panel",
-    Desc = "NYX Ping & CPU Monitor",
-    Callback = function(v)
-        VisualAPI.TogglePingPanel(v)
+    Desc = "Show FPS & Ping",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.TogglePingPanel(state)
     end,
 })
 

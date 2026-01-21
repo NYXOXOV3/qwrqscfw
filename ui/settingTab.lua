@@ -48,3 +48,66 @@ tab:Toggle({
         SecurityAPI.ToggleAntiStaff(state)
     end,
 })
+
+-- =========================================================
+-- MOVEMENT SECTION
+-- =========================================================
+
+local MovementAPI = _G.NYXHUB.Modules["setting/movementAPI.lua"]
+if not MovementAPI then
+    warn("[NYXHUB][SettingTab] MovementAPI not loaded.")
+    return
+end
+
+tab:Section({
+    Title = "Movement",
+    TextSize = 20,
+})
+
+-- 1. SLIDER WALKSPEED
+local SliderSpeed = tab:Slider({
+    Title = "WalkSpeed",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 200,
+        Default = MovementAPI.State.WalkSpeed,
+    },
+    Callback = function(value)
+        MovementAPI:SetWalkSpeed(value)
+    end,
+})
+
+-- 2. SLIDER JUMPPOWER
+local SliderJump = tab:Slider({
+    Title = "JumpPower",
+    Step = 1,
+    Value = {
+        Min = 50,
+        Max = 200,
+        Default = MovementAPI.State.JumpPower,
+    },
+    Callback = function(value)
+        MovementAPI:SetJumpPower(value)
+    end,
+})
+
+-- 3. RESET BUTTON
+tab:Button({
+    Title = "Reset Movement",
+    Icon = "rotate-ccw",
+    Locked = false,
+    Callback = function()
+        MovementAPI:Reset()
+
+        SliderSpeed:Set(16)
+        SliderJump:Set(50)
+
+        _G.NYXHUB.WindUI:Notify({
+            Title = "Movement Reset",
+            Content = "WalkSpeed & JumpPower reset to default",
+            Duration = 3,
+            Icon = "check",
+        })
+    end
+})

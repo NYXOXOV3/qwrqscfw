@@ -226,21 +226,43 @@ function ModesAPI.ToggleFreecam(state)
         Camera.CameraType = Enum.CameraType.Scriptable
 
         renderConnection = RunService.RenderStepped:Connect(function(dt)
-            local delta = UserInputService:GetMouseDelta()
-            camRot += Vector3.new(-delta.Y*sensitivity*0.01, -delta.X*sensitivity*0.01, 0)
-
+            -- Mouse look
+            local mouseDelta = UserInputService:GetMouseDelta()
+            camRot = camRot + Vector3.new(
+                -mouseDelta.Y * sensitivity * 0.01,
+                -mouseDelta.X * sensitivity * 0.01,
+                0
+            )
+        
+            -- Clamp vertical look (biar ga kebalik)
+            camRot = Vector3.new(
+                math.clamp(camRot.X, -math.rad(89), math.rad(89)),
+                camRot.Y,
+                0
+            )
+        
+            -- Input movement (6 axis)
             local move = Vector3.zero
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += Vector3.new(0,0,1) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then move += Vector3.new(0,0,-1) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then move += Vector3.new(-1,0,0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += Vector3.new(1,0,0) end
-
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += Vector3.new(0, 0, 1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then move += Vector3.new(0, 0, -1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then move += Vector3.new(-1, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += Vector3.new(1, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.Q) then
+                move += Vector3.new(0, -1, 0)
+            end
+        
+            -- Apply movement relative to camera
             if move.Magnitude > 0 then
                 move = move.Unit
-                local cf = CFrame.new(camPos) * CFrame.fromEulerAnglesYXZ(camRot.X, camRot.Y, 0)
-                camPos += (cf.LookVector*move.Z + cf.RightVector*move.X) * speed * dt
+                local rotationCF = CFrame.fromEulerAnglesYXZ(camRot.X, camRot.Y, 0)
+        
+                camPos = camPos +
+                    (rotationCF.LookVector * move.Z +
+                     rotationCF.RightVector * move.X +
+                     rotationCF.UpVector * move.Y) * speed * dt
             end
-
+        
             Camera.CFrame = CFrame.new(camPos) * CFrame.fromEulerAnglesYXZ(camRot.X, camRot.Y, 0)
         end)
     else

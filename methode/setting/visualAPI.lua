@@ -245,177 +245,204 @@ function VisualAPI.ToggleESP(state)
 end
 
 -- =========================================================
--- 5. NYX PING & CPU PANEL (NYX STYLE + DRAGGABLE)
+-- 5. NYX MINI PING PANEL (FPS + REAL PING)
 -- =========================================================
 
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local UserInputService = game:GetService("UserInputService")
+
 VisualAPI.PingPanel = {
-    Visible = false,
+    Enabled = false,
     GUI = nil,
     Conn = nil,
 }
 
--- ================= INTERNAL =================
+-- =========================
+-- THEME NYX MINI
+-- =========================
+local THEME = {
+    BG     = Color3.fromRGB(10, 8, 18),
+    STROKE = Color3.fromRGB(180, 120, 255),
+    TITLE  = Color3.fromRGB(200, 170, 255),
+    TEXT   = Color3.fromRGB(235, 235, 245),
+    GOOD   = Color3.fromRGB(140, 255, 200),
+    MID    = Color3.fromRGB(255, 200, 140),
+    BAD    = Color3.fromRGB(255, 120, 140),
+}
 
-local function createPingPanel()
-    local old = CoreGui:FindFirstChild("NYXPingPanel")
+-- =========================
+-- INTERNAL GUI BUILDER
+-- =========================
+local function createMiniPanel()
+    local old = CoreGui:FindFirstChild("LynxNyxMini")
     if old then old:Destroy() end
 
-    local sg = Instance.new("ScreenGui")
-    sg.Name = "NYXPingPanel"
-    sg.ResetOnSpawn = false
-    sg.IgnoreGuiInset = true
-    sg.DisplayOrder = 999999
-    sg.Parent = CoreGui
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "LynxNyxMini"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.Parent = CoreGui
 
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(0, 220, 0, 78)
-    container.Position = UDim2.new(0.5, -110, 0, 70)
-    container.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
-    container.BackgroundTransparency = 0.18
-    container.BorderSizePixel = 0
-    container.Visible = false
-    container.Parent = sg
+    local panel = Instance.new("Frame")
+    panel.Size = UDim2.new(0, 170, 0, 64)
+    panel.Position = UDim2.new(0.5, -85, 0, 60)
+    panel.BackgroundColor3 = THEME.BG
+    panel.BackgroundTransparency = 0.18
+    panel.BorderSizePixel = 0
+    panel.Parent = gui
 
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 12)
 
-    local stroke = Instance.new("UIStroke", container)
-    stroke.Color = Color3.fromRGB(255, 140, 50) -- NYX ORANGE
-    stroke.Thickness = 1.5
-    stroke.Transparency = 0.35
+    local stroke = Instance.new("UIStroke", panel)
+    stroke.Color = THEME.STROKE
+    stroke.Thickness = 1.4
+    stroke.Transparency = 0.45
 
-    -- ================= HEADER =================
-    local header = Instance.new("Frame", container)
-    header.Size = UDim2.new(1, 0, 0, 34)
-    header.BackgroundTransparency = 1
-
-    local logo = Instance.new("ImageLabel", header)
-    logo.Size = UDim2.new(0, 22, 0, 22)
-    logo.Position = UDim2.new(0, 10, 0, 6)
-    logo.BackgroundTransparency = 1
-    logo.Image = "rbxassetid://118176705805619" -- LOGO NYX
-    logo.ImageTransparency = 0.1
-
-    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
-
-    local title = Instance.new("TextLabel", header)
-    title.Position = UDim2.new(0, 40, 0, 0)
-    title.Size = UDim2.new(1, -50, 1, 0)
-    title.BackgroundTransparency = 1
-    title.Text = "NYX PANEL"
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 13
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.TextColor3 = Color3.fromRGB(255, 140, 50)
-
-    -- ================= CONTENT =================
-    local content = Instance.new("Frame", container)
-    content.Position = UDim2.new(0, 10, 0, 38)
-    content.Size = UDim2.new(1, -20, 1, -44)
+    local content = Instance.new("Frame", panel)
+    content.Size = UDim2.fromScale(1,1)
     content.BackgroundTransparency = 1
 
-    local ping = Instance.new("TextLabel", content)
-    ping.Size = UDim2.new(0.5, -6, 1, 0)
-    ping.BackgroundTransparency = 1
-    ping.Font = Enum.Font.GothamBold
-    ping.TextSize = 13
-    ping.Text = "Ping: -- ms"
-    ping.TextColor3 = Color3.fromRGB(255, 200, 120)
+    local function statBlock(titleText, x)
+        local block = Instance.new("Frame", content)
+        block.Size = UDim2.new(0.5, 0, 1, 0)
+        block.Position = UDim2.new(x, 0, 0, 0)
+        block.BackgroundTransparency = 1
 
-    local cpu = Instance.new("TextLabel", content)
-    cpu.Position = UDim2.new(0.5, 6, 0, 0)
-    cpu.Size = UDim2.new(0.5, -6, 1, 0)
-    cpu.BackgroundTransparency = 1
-    cpu.Font = Enum.Font.GothamBold
-    cpu.TextSize = 13
-    cpu.Text = "CPU: --%"
-    cpu.TextColor3 = Color3.fromRGB(150, 255, 180)
+        local title = Instance.new("TextLabel", block)
+        title.Size = UDim2.new(1, 0, 0, 20)
+        title.BackgroundTransparency = 1
+        title.Text = titleText
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 11
+        title.TextColor3 = THEME.TITLE
 
-    -- ================= DRAG LOGIC =================
-    local dragging, dragStart, startPos
-    local UIS = game:GetService("UserInputService")
+        local value = Instance.new("TextLabel", block)
+        value.Position = UDim2.new(0, 0, 0, 22)
+        value.Size = UDim2.new(1, 0, 0, 30)
+        value.BackgroundTransparency = 1
+        value.Text = "--"
+        value.Font = Enum.Font.GothamBold
+        value.TextSize = 18
+        value.TextColor3 = THEME.TEXT
 
-    header.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = container.Position
+        return value
+    end
 
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
+    local fpsLabel  = statBlock("FPS", 0)
+    local pingLabel = statBlock("PING", 0.5)
 
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            container.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    return {
-        ScreenGui = sg,
-        Container = container,
-        Ping = ping,
-        CPU = cpu
-    }
-end
-
--- ================= PUBLIC =================
-
-function VisualAPI.TogglePingPanel(state)
-    if state and not VisualAPI.PingPanel.Visible then
-        if not VisualAPI.PingPanel.GUI then
-            VisualAPI.PingPanel.GUI = createPingPanel()
-        end
-
-        local g = VisualAPI.PingPanel.GUI
-        g.Container.Visible = true
-        VisualAPI.PingPanel.Visible = true
-
-        VisualAPI.PingPanel.Conn = RunService.Heartbeat:Connect(function()
-            if not VisualAPI.PingPanel.Visible then return end
-
-            local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
-            g.Ping.Text = "Ping: " .. ping .. " ms"
-
-            if ping <= 60 then
-                g.Ping.TextColor3 = Color3.fromRGB(120, 255, 160)
-            elseif ping <= 120 then
-                g.Ping.TextColor3 = Color3.fromRGB(255, 210, 120)
-            else
-                g.Ping.TextColor3 = Color3.fromRGB(255, 120, 120)
-            end
-
-            local cpu = math.random(20, 45)
-            g.CPU.Text = "CPU: " .. cpu .. "%"
-            if cpu <= 40 then
-                g.CPU.TextColor3 = Color3.fromRGB(140, 255, 180)
-            elseif cpu <= 70 then
-                g.CPU.TextColor3 = Color3.fromRGB(255, 200, 120)
-            else
-                g.CPU.TextColor3 = Color3.fromRGB(255, 120, 120)
+    -- =========================
+    -- DRAG (MOUSE + TOUCH)
+    -- =========================
+    do
+        local dragging, dragStart, startPos
+        panel.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1
+            or i.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = i.Position
+                startPos = panel.Position
+                i.Changed:Connect(function()
+                    if i.UserInputState == Enum.UserInputState.End then
+                        dragging = false
+                    end
+                end)
             end
         end)
 
-    elseif not state and VisualAPI.PingPanel.Visible then
-        VisualAPI.PingPanel.Visible = false
+        UserInputService.InputChanged:Connect(function(i)
+            if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement
+            or i.UserInputType == Enum.UserInputType.Touch) then
+                local delta = i.Position - dragStart
+                panel.Position = UDim2.new(
+                    startPos.X.Scale, startPos.X.Offset + delta.X,
+                    startPos.Y.Scale, startPos.Y.Offset + delta.Y
+                )
+            end
+        end)
+    end
+
+    return {
+        Gui = gui,
+        FPS = fpsLabel,
+        Ping = pingLabel,
+    }
+end
+
+-- =========================
+-- UTIL
+-- =========================
+local function getPing()
+    local ping = 0
+    pcall(function()
+        local net = Stats:FindFirstChild("Network")
+        if net then
+            local s = net:FindFirstChild("ServerStatsItem")
+            if s and s:FindFirstChild("Data Ping") then
+                ping = tonumber(s["Data Ping"]:GetValueString():match("%d+")) or 0
+            end
+        end
+    end)
+    return ping
+end
+
+local function colorize(label, value, good, mid)
+    if value <= good then
+        label.TextColor3 = THEME.GOOD
+    elseif value <= mid then
+        label.TextColor3 = THEME.MID
+    else
+        label.TextColor3 = THEME.BAD
+    end
+end
+
+-- =========================
+-- PUBLIC TOGGLE
+-- =========================
+function VisualAPI.TogglePingPanel(state)
+    if state and not VisualAPI.PingPanel.Enabled then
+        VisualAPI.PingPanel.Enabled = true
+        VisualAPI.PingPanel.GUI = createMiniPanel()
+
+        local frames, fpsTimer, statTimer = 0, 0, 0
+
+        VisualAPI.PingPanel.Conn = RunService.Heartbeat:Connect(function(dt)
+            frames += 1
+            fpsTimer += dt
+            statTimer += dt
+
+            if fpsTimer >= 1 then
+                local fps = frames
+                frames = 0
+                fpsTimer = 0
+
+                VisualAPI.PingPanel.GUI.FPS.Text = fps
+                colorize(VisualAPI.PingPanel.GUI.FPS, fps, 50, 30)
+            end
+
+            if statTimer >= 0.5 then
+                statTimer = 0
+                local ping = getPing()
+                VisualAPI.PingPanel.GUI.Ping.Text = ping
+                colorize(VisualAPI.PingPanel.GUI.Ping, ping, 80, 150)
+            end
+        end)
+
+    elseif not state and VisualAPI.PingPanel.Enabled then
+        VisualAPI.PingPanel.Enabled = false
+
         if VisualAPI.PingPanel.Conn then
             VisualAPI.PingPanel.Conn:Disconnect()
             VisualAPI.PingPanel.Conn = nil
         end
-        if VisualAPI.PingPanel.GUI then
-            VisualAPI.PingPanel.GUI.Container.Visible = false
+
+        if VisualAPI.PingPanel.GUI and VisualAPI.PingPanel.GUI.Gui then
+            VisualAPI.PingPanel.GUI.Gui:Destroy()
         end
+
+        VisualAPI.PingPanel.GUI = nil
     end
 end
 

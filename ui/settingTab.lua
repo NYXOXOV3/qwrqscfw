@@ -236,3 +236,17 @@ tab:Toggle({
     end,
 })
 
+-- =========================================================
+-- EXTERNAL SECTION
+-- =========================================================
+
+tab:Section({ Title = "External", TextSize = 20 })
+
+tab:Button({
+    Title = "Fly",
+    Desc = "Fly Gui",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+    end
+})

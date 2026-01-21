@@ -111,3 +111,58 @@ tab:Button({
         })
     end
 })
+
+-- =========================================================
+-- MODES SECTION
+-- =========================================================
+
+local ModesAPI = _G.NYXHUB.Modules["setting/modesAPI.lua"]
+if not ModesAPI then
+    warn("[NYXHUB][SettingTab] ModesAPI not loaded.")
+    return
+end
+
+tab:Section({
+    Title = "Modes",
+    TextSize = 20,
+})
+
+tab:Toggle({
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(state)
+        ModesAPI.ToggleInfiniteJump(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "No Clip",
+    Default = false,
+    Callback = function(state)
+        ModesAPI.ToggleNoClip(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Walk on Water",
+    Default = false,
+    Callback = function(state)
+        ModesAPI.ToggleWalkOnWater(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Infinite Zoom",
+    Default = false,
+    Callback = function(state)
+        ModesAPI.ToggleInfiniteZoom(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Freecam",
+    Default = false,
+    Callback = function(state)
+        ModesAPI.ToggleFreecam(state)
+    end,
+})

@@ -333,7 +333,7 @@ local function createMiniPanel()
     logo.Size = UDim2.new(0, 26, 0, 26)
     logo.Position = UDim2.new(1, -38, 0.5, -13)
     logo.BackgroundTransparency = 1
-    logo.Image = "rbxassetid://118176705805619"
+    logo.Image = "rbxassetid://137263312772667"
     logo.ImageTransparency = 0.1
 
     Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)

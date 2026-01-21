@@ -1,71 +1,65 @@
 -- =========================================================
--- NYXHUB EXECUTOR LOADER (RE-EXECUTABLE | GITHUB MODE)
+-- NYXHUB EXECUTOR LOADER (GITHUB MODE)
 -- =========================================================
+
+if _G.__NYXHUB_EXECUTED then return end
+_G.__NYXHUB_EXECUTED = true
 
 -- ================= CONFIG =================
 local GITHUB_RAW = "https://raw.githubusercontent.com/NYXOXOV3/qwrqscfw/main/"
 
--- ================= GLOBAL CONTEXT =================
-_G.NYXHUB = _G.NYXHUB or {
-    Window = nil,
-    WindUI = nil,
-    Modules = {},
-    Flags = {},
-    Tabs = {},
-}
+-- ================= SERVICES =================
+local HttpService = game:GetService("HttpService")
 
 -- ================= UI CORE =================
-if not _G.NYXHUB.WindUI then
-    _G.NYXHUB.WindUI = loadstring(
-        game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")
-    )()
-end
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-local WindUI = _G.NYXHUB.WindUI
+local Window = WindUI:CreateWindow({
+    Title = "NYXHUB - Fish It",
+    Icon = "rbxassetid://137263312772667",
+    Folder = "NYXHUB",
+    Size = UDim2.fromOffset(600, 360),
+    MinSize = Vector2.new(560, 250),
+    MaxSize = Vector2.new(950, 760),
+    Theme = "Violet",
+    Resizable = true,
+    SideBarWidth = 190,
+    Transparent = true,
+})
+Window:SetToggleKey(Enum.KeyCode.G)
+Window:Tag({
+    Title = "v1.0.3",
+    Color = Color3.fromRGB(0, 255, 0),
+})
 
--- ================= WINDOW (CREATE OR REUSE) =================
-if not _G.NYXHUB.Window then
-    _G.NYXHUB.Window = WindUI:CreateWindow({
-        Title = "NYXHUB - Fish It",
-        Icon = "rbxassetid://137263312772667",
-        Folder = "NYXHUB",
-        Size = UDim2.fromOffset(600, 360),
-        MinSize = Vector2.new(560, 250),
-        MaxSize = Vector2.new(950, 760),
-        Theme = "Violet",
-        Resizable = true,
-        SideBarWidth = 190,
-        Transparent = true,
-    })
-
-    _G.NYXHUB.Window:SetToggleKey(Enum.KeyCode.G)
-    _G.NYXHUB.Window:Tag({
-        Title = "v1.0.3",
-        Color = Color3.fromRGB(0, 255, 0),
-    })
-end
-
-local Window = _G.NYXHUB.Window
-
--- ================= CLEAN OLD TABS =================
-if _G.NYXHUB.Tabs then
-    for _, tab in pairs(_G.NYXHUB.Tabs) do
-        pcall(function()
-            if tab.Destroy then tab:Destroy() end
-        end)
-    end
-end
-_G.NYXHUB.Tabs = {}
+-- ================= GLOBAL CONTEXT =================
+_G.NYXHUB = {
+    Window = Window,
+    WindUI = WindUI,
+    Modules = {},
+    Flags = {},
+}
 
 -- ================= SAFE HTTP LOAD =================
 local function httpLoad(path)
-    local src = game:HttpGet(GITHUB_RAW .. path)
-    local fn = loadstring(src)
+    local url = GITHUB_RAW .. path
+    local ok, src = pcall(game.HttpGet, game, url)
+    if not ok or not src then
+        warn("[NYXHUB][HTTP FAIL]:", path)
+        return nil
+    end
+
+    local fn, err = loadstring(src)
+    if not fn then
+        warn("[NYXHUB][LOADSTRING FAIL]:", path, err)
+        return nil
+    end
+
     return fn()
 end
 
 -- =================================================
--- SECURITY (IDEMPOTENT)
+-- 1️⃣ SECURITY (FIRST)
 -- =================================================
 local Security = httpLoad("security/SecurityLoader.lua")
 if Security and Security.Init then
@@ -74,11 +68,9 @@ end
 _G.NYXHUB.Modules.Security = Security
 
 -- =================================================
--- METHOD API LOADER (REFRESH)
+-- 2️⃣ METHOD API LOADER
 -- =================================================
-_G.NYXHUB.Modules = {}
-
-for _, path in ipairs({
+local METHOD_LIST = {
     "info/infoAPI.lua",
 
     "setting/configAPI.lua",
@@ -132,15 +124,19 @@ for _, path in ipairs({
     "exclusive/ruindoorAPI.lua",
     "exclusive/kaitunAPI.lua",
     "exclusive/miscAPI.lua",
-    -- (list lo tetap, tidak gue ubah)
-}) do
-    _G.NYXHUB.Modules[path] = httpLoad("methode/" .. path)
+}
+
+for _, path in ipairs(METHOD_LIST) do
+    local mod = httpLoad("methode/" .. path)
+    if mod then
+        _G.NYXHUB.Modules[path] = mod
+    end
 end
 
 -- =================================================
--- UI TABS (RELOAD)
+-- 3️⃣ UI TABS (EXECUTE)
 -- =================================================
-for _, tab in ipairs({
+local UI_TABS = {
     "infoTab.lua",
     "settingTab.lua",
     "farmTab.lua",
@@ -152,16 +148,27 @@ for _, tab in ipairs({
     "teleportTab.lua",
     "eventTab.lua",
     "exclusiveTab.lua",
-}) do
-    local fn = loadstring(game:HttpGet(GITHUB_RAW .. "ui/" .. tab))
-    fn()
+}
+
+for _, tab in ipairs(UI_TABS) do
+    local ok, err = pcall(function()
+        loadstring(game:HttpGet(GITHUB_RAW .. "ui/" .. tab))()
+    end)
+    if not ok then
+        warn("[NYXHUB][UI TAB ERROR]:", tab, err)
+    end
 end
 
+-- =================================================
+-- READY
+-- =================================================
 _G.NYXHUB.Flags.Ready = true
 
 WindUI:Notify({
-    Title = "NYXHUB Reloaded",
-    Content = "UI refreshed safely",
-    Duration = 2,
-    Icon = "refresh",
+    Title = "NYXHUB Ready",
+    Content = "Loaded from GitHub repository",
+    Duration = 3,
+    Icon = "check",
 })
+
+print("[NYXHUB] Loaded fully from GitHub.")

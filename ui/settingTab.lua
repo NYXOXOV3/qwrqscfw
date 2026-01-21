@@ -187,49 +187,51 @@ if not VisualAPI then
     return
 end
 
-tab:Section({
-    Title = "Visual",
-    TextSize = 20,
-})
+
+tab:Section({ Title = "Visual", TextSize = 20 })
 
 tab:Toggle({
     Title = "FPS Boost",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.ToggleFPSBoost(state)
+    Callback = function(v)
+        VisualAPI.ToggleFPSBoost(v)
     end,
 })
 
 tab:Toggle({
     Title = "Disable 3D Rendering",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.ToggleDisable3D(state)
+    Callback = function(v)
+        VisualAPI.ToggleDisable3D(v)
+    end,
+})
+
+tab:Dropdown({
+    Title = "FPS Limit",
+    Values = {"30","60","90","120","144","165","240"},
+    Default = tostring(VisualAPI.UnlockFPS.Selected),
+    Callback = function(v)
+        VisualAPI.SetFPSCap(tonumber(v))
     end,
 })
 
 tab:Toggle({
     Title = "Unlock FPS",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.ToggleUnlockFPS(state)
+    Callback = function(v)
+        VisualAPI.ToggleUnlockFPS(v)
     end,
 })
 
 tab:Toggle({
     Title = "Ping Panel",
-    Desc = "Show Ping & CPU Monitor (NYX)",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.TogglePingPanel(state)
+    Desc = "NYX Ping & CPU Monitor",
+    Callback = function(v)
+        VisualAPI.TogglePingPanel(v)
     end,
 })
 
 tab:Toggle({
     Title = "Player ESP",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.ToggleESP(state)
+    Callback = function(v)
+        VisualAPI.ToggleESP(v)
     end,
 })
 

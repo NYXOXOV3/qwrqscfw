@@ -1,35 +1,29 @@
 -- =========================================================
--- NYXHUB SECURITY LOADER (GITHUB)
+-- NYXHUB SECURITY LOADER (RE-EXEC SAFE)
 -- =========================================================
 
-local Security = {}
+local Security = _G.__NYXHUB_SECURITY or {}
+_G.__NYXHUB_SECURITY = Security
 
-if _G.__NYXHUB_SECURITY then
+if Security._initialized then
     return Security
 end
-_G.__NYXHUB_SECURITY = true
+Security._initialized = true
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
 local LocalPlayer = Players.LocalPlayer
 
-local state = {
-    Initialized = false,
-}
-
 function Security.Init()
-    if state.Initialized then return end
+    if Security._active then return end
+    Security._active = true
 
-    -- Lifecycle marker only
     LocalPlayer.CharacterAdded:Connect(function()
         if _G.NYXHUB and _G.NYXHUB.Flags then
             _G.NYXHUB.Flags.LastRespawn = os.time()
         end
     end)
 
-    state.Initialized = true
-    print("[NYXHUB][SECURITY] Initialized (GitHub)")
+    print("[NYXHUB][SECURITY] Active (re-exec safe)")
 end
 
 return Security

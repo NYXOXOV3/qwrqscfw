@@ -11,6 +11,32 @@ end
 local Window = _G.NYXHUB.Window
 local WindUI = _G.NYXHUB.WindUI
 
+local function CreateCollapsibleSection(tab, title)
+    local opened = false
+    local items = {}
+
+    local header = tab:Toggle({
+        Title = title,
+        Default = false,
+        Callback = function(state)
+            opened = state
+            for _, item in ipairs(items) do
+                item:SetVisible(state)
+            end
+        end,
+    })
+
+    local section = {
+        Add = function(_, ui)
+            ui:SetVisible(false)
+            table.insert(items, ui)
+            return ui
+        end
+    }
+
+    return section
+end
+
 local SecurityAPI = _G.NYXHUB.Modules["setting/securityAPI.lua"]
 if not SecurityAPI then
     warn("[NYXHUB][SettingTab] SecurityAPI not loaded.")
@@ -178,7 +204,7 @@ tab:Toggle({
 })
 
 -- =========================================================
--- VISUAL SECTION
+-- VISUAL SECTION (COLLAPSIBLE)
 -- =========================================================
 
 local VisualAPI = _G.NYXHUB.Modules["setting/visualAPI.lua"]
@@ -187,54 +213,52 @@ if not VisualAPI then
     return
 end
 
+local Visual = CreateCollapsibleSection(tab, "Visual")
 
-tab:Section({ Title = "Visual", TextSize = 20 })
-
-tab:Toggle({
+Visual:Add(tab:Toggle({
     Title = "FPS Boost",
     Callback = function(v)
         VisualAPI.ToggleFPSBoost(v)
     end,
-})
+}))
 
-tab:Toggle({
+Visual:Add(tab:Toggle({
     Title = "Disable 3D Rendering",
     Callback = function(v)
         VisualAPI.ToggleDisable3D(v)
     end,
-})
+}))
 
-tab:Dropdown({
+Visual:Add(tab:Dropdown({
     Title = "FPS Limit",
     Values = {"30","60","90","120","144","165","240"},
     Default = tostring(VisualAPI.UnlockFPS.Selected),
     Callback = function(v)
         VisualAPI.SetFPSCap(tonumber(v))
     end,
-})
+}))
 
-tab:Toggle({
+Visual:Add(tab:Toggle({
     Title = "Unlock FPS",
     Callback = function(v)
         VisualAPI.ToggleUnlockFPS(v)
     end,
-})
+}))
 
-tab:Toggle({
+Visual:Add(tab:Toggle({
     Title = "Ping Panel",
-    Desc = "Show FPS & Ping",
-    Default = false,
-    Callback = function(state)
-        VisualAPI.TogglePingPanel(state)
+    Callback = function(v)
+        VisualAPI.TogglePingPanel(v)
     end,
-})
+}))
 
-tab:Toggle({
+Visual:Add(tab:Toggle({
     Title = "Player ESP",
     Callback = function(v)
         VisualAPI.ToggleESP(v)
     end,
-})
+}))
+
 
 -- =========================================================
 -- EXTERNAL SECTION

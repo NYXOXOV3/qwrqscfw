@@ -286,8 +286,8 @@ local function createMiniPanel()
     gui.Parent = CoreGui
 
     local panel = Instance.new("Frame")
-    panel.Size = UDim2.new(0, 180, 0, 90)
-    panel.Position = UDim2.new(0.5, -90, 0, 60)
+    panel.Size = UDim2.new(0, 190, 0, 64)
+    panel.Position = UDim2.new(0.5, -95, 0, 60)
     panel.BackgroundColor3 = THEME.BG
     panel.BackgroundTransparency = 0.18
     panel.BorderSizePixel = 0
@@ -301,23 +301,11 @@ local function createMiniPanel()
     stroke.Transparency = 0.45
 
     -- =====================
-    -- LOGO
-    -- =====================
-    local logo = Instance.new("ImageLabel", panel)
-    logo.Size = UDim2.new(0, 26, 0, 26)
-    logo.Position = UDim2.new(0.5, -13, 0, 6)
-    logo.BackgroundTransparency = 1
-    logo.Image = "rbxassetid://137263312772667"
-    logo.ImageTransparency = 0.1
-
-    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
-
-    -- =====================
-    -- FPS ROW
+    -- FPS
     -- =====================
     local fpsLabel = Instance.new("TextLabel", panel)
-    fpsLabel.Position = UDim2.new(0, 12, 0, 40)
-    fpsLabel.Size = UDim2.new(1, -24, 0, 20)
+    fpsLabel.Position = UDim2.new(0, 12, 0, 8)
+    fpsLabel.Size = UDim2.new(1, -60, 0, 22)
     fpsLabel.BackgroundTransparency = 1
     fpsLabel.Text = "FPS  : --"
     fpsLabel.Font = Enum.Font.GothamBold
@@ -326,17 +314,29 @@ local function createMiniPanel()
     fpsLabel.TextColor3 = THEME.TEXT
 
     -- =====================
-    -- PING ROW
+    -- PING
     -- =====================
     local pingLabel = Instance.new("TextLabel", panel)
-    pingLabel.Position = UDim2.new(0, 12, 0, 62)
-    pingLabel.Size = UDim2.new(1, -24, 0, 20)
+    pingLabel.Position = UDim2.new(0, 12, 0, 34)
+    pingLabel.Size = UDim2.new(1, -60, 0, 22)
     pingLabel.BackgroundTransparency = 1
     pingLabel.Text = "PING : -- ms"
     pingLabel.Font = Enum.Font.GothamBold
     pingLabel.TextSize = 14
     pingLabel.TextXAlignment = Enum.TextXAlignment.Left
     pingLabel.TextColor3 = THEME.TEXT
+
+    -- =====================
+    -- LOGO (KANAN, CENTER)
+    -- =====================
+    local logo = Instance.new("ImageLabel", panel)
+    logo.Size = UDim2.new(0, 26, 0, 26)
+    logo.Position = UDim2.new(1, -38, 0.5, -13)
+    logo.BackgroundTransparency = 1
+    logo.Image = "rbxassetid://118176705805619"
+    logo.ImageTransparency = 0.1
+
+    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
 
     -- =====================
     -- DRAG (MOUSE + TOUCH)

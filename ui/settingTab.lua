@@ -176,3 +176,60 @@ tab:Toggle({
         ModesAPI.ToggleFreecam(state)
     end,
 })
+
+-- =========================================================
+-- VISUAL SECTION
+-- =========================================================
+
+local VisualAPI = _G.NYXHUB.Modules["setting/visualAPI.lua"]
+if not VisualAPI then
+    warn("[NYXHUB][SettingTab] VisualAPI not loaded.")
+    return
+end
+
+tab:Section({
+    Title = "Visual",
+    TextSize = 20,
+})
+
+tab:Toggle({
+    Title = "FPS Boost",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.ToggleFPSBoost(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Disable 3D Rendering",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.ToggleDisable3D(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Unlock FPS",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.ToggleUnlockFPS(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Ping Panel",
+    Desc = "Show Ping & CPU Monitor (NYX)",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.TogglePingPanel(state)
+    end,
+})
+
+tab:Toggle({
+    Title = "Player ESP",
+    Default = false,
+    Callback = function(state)
+        VisualAPI.ToggleESP(state)
+    end,
+})
+

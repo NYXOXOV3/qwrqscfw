@@ -286,8 +286,8 @@ local function createMiniPanel()
     gui.Parent = CoreGui
 
     local panel = Instance.new("Frame")
-    panel.Size = UDim2.new(0, 170, 0, 64)
-    panel.Position = UDim2.new(0.5, -85, 0, 60)
+    panel.Size = UDim2.new(0, 180, 0, 90)
+    panel.Position = UDim2.new(0.5, -90, 0, 60)
     panel.BackgroundColor3 = THEME.BG
     panel.BackgroundTransparency = 0.18
     panel.BorderSizePixel = 0
@@ -300,42 +300,47 @@ local function createMiniPanel()
     stroke.Thickness = 1.4
     stroke.Transparency = 0.45
 
-    local content = Instance.new("Frame", panel)
-    content.Size = UDim2.fromScale(1,1)
-    content.BackgroundTransparency = 1
+    -- =====================
+    -- LOGO
+    -- =====================
+    local logo = Instance.new("ImageLabel", panel)
+    logo.Size = UDim2.new(0, 26, 0, 26)
+    logo.Position = UDim2.new(0.5, -13, 0, 6)
+    logo.BackgroundTransparency = 1
+    logo.Image = "rbxassetid://137263312772667"
+    logo.ImageTransparency = 0.1
 
-    local function statBlock(titleText, x)
-        local block = Instance.new("Frame", content)
-        block.Size = UDim2.new(0.5, 0, 1, 0)
-        block.Position = UDim2.new(x, 0, 0, 0)
-        block.BackgroundTransparency = 1
+    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
 
-        local title = Instance.new("TextLabel", block)
-        title.Size = UDim2.new(1, 0, 0, 20)
-        title.BackgroundTransparency = 1
-        title.Text = titleText
-        title.Font = Enum.Font.GothamBold
-        title.TextSize = 11
-        title.TextColor3 = THEME.TITLE
+    -- =====================
+    -- FPS ROW
+    -- =====================
+    local fpsLabel = Instance.new("TextLabel", panel)
+    fpsLabel.Position = UDim2.new(0, 12, 0, 40)
+    fpsLabel.Size = UDim2.new(1, -24, 0, 20)
+    fpsLabel.BackgroundTransparency = 1
+    fpsLabel.Text = "FPS  : --"
+    fpsLabel.Font = Enum.Font.GothamBold
+    fpsLabel.TextSize = 14
+    fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    fpsLabel.TextColor3 = THEME.TEXT
 
-        local value = Instance.new("TextLabel", block)
-        value.Position = UDim2.new(0, 0, 0, 22)
-        value.Size = UDim2.new(1, 0, 0, 30)
-        value.BackgroundTransparency = 1
-        value.Text = "--"
-        value.Font = Enum.Font.GothamBold
-        value.TextSize = 18
-        value.TextColor3 = THEME.TEXT
+    -- =====================
+    -- PING ROW
+    -- =====================
+    local pingLabel = Instance.new("TextLabel", panel)
+    pingLabel.Position = UDim2.new(0, 12, 0, 62)
+    pingLabel.Size = UDim2.new(1, -24, 0, 20)
+    pingLabel.BackgroundTransparency = 1
+    pingLabel.Text = "PING : -- ms"
+    pingLabel.Font = Enum.Font.GothamBold
+    pingLabel.TextSize = 14
+    pingLabel.TextXAlignment = Enum.TextXAlignment.Left
+    pingLabel.TextColor3 = THEME.TEXT
 
-        return value
-    end
-
-    local fpsLabel  = statBlock("FPS", 0)
-    local pingLabel = statBlock("PING", 0.5)
-
-    -- =========================
+    -- =====================
     -- DRAG (MOUSE + TOUCH)
-    -- =========================
+    -- =====================
     do
         local dragging, dragStart, startPos
         panel.InputBegan:Connect(function(i)
@@ -418,14 +423,14 @@ function VisualAPI.TogglePingPanel(state)
                 frames = 0
                 fpsTimer = 0
 
-                VisualAPI.PingPanel.GUI.FPS.Text = fps
+                VisualAPI.PingPanel.GUI.FPS.Text = "FPS  : " .. fps
                 colorize(VisualAPI.PingPanel.GUI.FPS, fps, 50, 30)
             end
 
             if statTimer >= 0.5 then
                 statTimer = 0
                 local ping = getPing()
-                VisualAPI.PingPanel.GUI.Ping.Text = ping
+                VisualAPI.PingPanel.GUI.Ping.Text = "PING : " .. ping .. " ms"
                 colorize(VisualAPI.PingPanel.GUI.Ping, ping, 80, 150)
             end
         end)

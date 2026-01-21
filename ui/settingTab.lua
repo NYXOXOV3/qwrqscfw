@@ -127,40 +127,50 @@ tab:Section({
     TextSize = 20,
 })
 
+-- 1. Infinite Jump
 tab:Toggle({
     Title = "Infinite Jump",
+    Desc = "Jump without limit",
     Default = false,
     Callback = function(state)
         ModesAPI.ToggleInfiniteJump(state)
     end,
 })
 
+-- 2. No Clip
 tab:Toggle({
     Title = "No Clip",
+    Desc = "Walk through objects",
     Default = false,
     Callback = function(state)
         ModesAPI.ToggleNoClip(state)
     end,
 })
 
+-- 3. Walk on Water
 tab:Toggle({
     Title = "Walk on Water",
+    Desc = "Walk on terrain water",
     Default = false,
     Callback = function(state)
         ModesAPI.ToggleWalkOnWater(state)
     end,
 })
 
+-- 4. Infinite Zoom
 tab:Toggle({
     Title = "Infinite Zoom",
+    Desc = "Unlimited camera zoom",
     Default = false,
     Callback = function(state)
         ModesAPI.ToggleInfiniteZoom(state)
     end,
 })
 
+-- 5. Freecam
 tab:Toggle({
     Title = "Freecam",
+    Desc = "Detach camera and fly freely",
     Default = false,
     Callback = function(state)
         ModesAPI.ToggleFreecam(state)

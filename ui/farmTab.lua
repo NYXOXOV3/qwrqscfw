@@ -300,6 +300,7 @@ blatantv2:Toggle({
 })
 
 local blatantbeta = farm:Section({ Title = "Blatant Beta" })
+
 blatantbeta:Input({
         Title = "Burst Count",
         Default = tostring(UltraBlatantV3.Settings.BurstCount),

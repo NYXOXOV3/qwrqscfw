@@ -32,12 +32,9 @@ home:Select()
 -- =========================================================
 -- DISCORD
 -- =========================================================
-home:Section({
-    Title = "Join Discord Server NYXHUB",
-    TextSize = 18,
-})
+local info = home:Section({ Title = "Join Discord Server NYXHUB"})
 
-home:Paragraph({
+info:Paragraph({
     Title = InfoAPI.Discord.Name,
     Desc  = "Join our community Discord for updates, support, and discussion.",
     Image = InfoAPI.Discord.Image,

@@ -71,7 +71,7 @@ legit:Toggle({
 
 
 
-local blatant = farm:Section({ Title = "Blatant Mode" })
+local blatant = farm:Section({ Title = "Blatant Stabil" })
 
 blatant:Toggle({
     Title = "Instant Fishing (Blatant)",
@@ -80,12 +80,6 @@ blatant:Toggle({
         AutoClickAPI.Stop()
         if v then BlatantAPI.Start() else BlatantAPI.Stop() end
     end
-})
-
-blatant:Dropdown({
-    Title = "Mode",
-    Values = {"Old","New"},
-    Callback = BlatantAPI.SetMode
 })
 
 blatant:Input({

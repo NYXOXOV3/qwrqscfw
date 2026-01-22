@@ -47,6 +47,11 @@ if not UltraBlatantV2 then
     warn("[FarmTab] UltraBlatantV2 API not loaded")
     return
 end
+local UltraBlatantV3 = _G.NYXHUB.Modules["farm/blatant3API.lua"]
+if not UltraBlatantV2 then
+    warn("[FarmTab] UltraBlatantV2 API not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -293,3 +298,39 @@ blatantv2:Toggle({
         end
     end
 })
+
+local blatantbeta = farm:Section({ Title = "Blatant Beta" })
+blatantbeta:Input({
+        Title = "Burst Count",
+        Default = tostring(UltraBlatantV3.Settings.BurstCount),
+        Callback = function(v)
+            UltraBlatantV3.UpdateSettings(tonumber(v), nil, nil, nil, nil)
+        end
+    })
+
+    blatantbeta:Input({
+        Title = "Cast Gap",
+        Default = tostring(UltraBlatantV3.Settings.CastGap),
+        Callback = function(v)
+            UltraBlatantV3.UpdateSettings(nil, tonumber(v), nil, nil, nil)
+        end
+    })
+
+    blatantbeta:Input({
+        Title = "Burst Delay",
+        Default = tostring(UltraBlatantV3.Settings.BurstDelay),
+        Callback = function(v)
+            UltraBlatantV3.UpdateSettings(nil, nil, nil, nil, tonumber(v))
+        end
+    })
+
+    blatantbeta:Toggle({
+        Title = "Ultra Blatant V3 (Burst 8x)",
+        Callback = function(state)
+            if state then
+                UltraBlatantV3.Start()
+            else
+                UltraBlatantV3.Stop()
+            end
+        end
+    })

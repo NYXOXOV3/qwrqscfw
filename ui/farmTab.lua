@@ -100,7 +100,7 @@ local modeDropdown = tab:Dropdown({
 })
 
 -- Status Display
-local statusLabel = tab:Label({
+local statusLabel = tab:Paragraph({
     Title = "Status: Not Running",
     Desc = "Fish Caught: 0 | Cycles: 0"
 })
@@ -274,17 +274,17 @@ tab:Section({
     TextSize = 16,
 })
 
-tab:Label({
+tab:Paragraph({
     Title = "Instant V1",
     Desc = "Ultra Speed (v29.4) - Fastest mode"
 })
 
-tab:Label({
+tab:Paragraph({
     Title = "Instant V2", 
     Desc = "Perfect Cast (v35.2) - Better accuracy"
 })
 
-tab:Label({
+tab:Paragraph({
     Title = "Instant X2",
     Desc = "2X Speed - Balanced speed & safety"
 })

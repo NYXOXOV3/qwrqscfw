@@ -37,6 +37,11 @@ if not PerfectAPI then
     warn("[FarmTab] InstantPerfectAPI not loaded")
     return
 end
+local UltraBlatantAPI = _G.NYXHUB.Modules["farm/blatant1API.lua"]
+if not UltraBlatantAPI then
+    warn("[FarmTab] UltraBlatantAPI not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -178,4 +183,50 @@ blatant:Input({
     end
 })
 
+local blatantv1 = farm:Section({ Title = "Blatant V1" })
+
+blatantv1:Input({
+    Title = "Complete Delay",
+    Placeholder = "0.001",
+    Default = tostring(UltraBlatantAPI.Settings.CompleteDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            UltraBlatantAPI.UpdateSettings(n, nil)
+        end
+    end
+})
+
+blatantv1:Input({
+    Title = "Cancel Delay",
+    Placeholder = "0.001",
+    Default = tostring(UltraBlatantAPI.Settings.CancelDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            UltraBlatantAPI.UpdateSettings(nil, n)
+        end
+    end
+})
+
+blatantv1:Toggle({
+    Title = "Ultra Blatant Fishing",
+    Callback = function(state)
+        if state then
+            UltraBlatantAPI.Start()
+            WindUI:Notify({
+                Title = "Ultra Blatant ON",
+                Duration = 2,
+                Icon = "zap"
+            })
+        else
+            UltraBlatantAPI.Stop()
+            WindUI:Notify({
+                Title = "Ultra Blatant OFF",
+                Duration = 2,
+                Icon = "x"
+            })
+        end
+    end
+})
 

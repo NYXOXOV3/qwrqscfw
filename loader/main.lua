@@ -81,6 +81,7 @@ local METHOD_LIST = {
     "setting/externalAPI.lua",
     "setting/resetAPI.lua",
 
+    "farm/autoclickAPI.lua",
     "farm/legitAPI.lua",
     "farm/blatant1API.lua",
     "farm/blatant2API.lua",

@@ -5,61 +5,60 @@
 
 local InstantPerfectAPI = {}
 
--- ⚡ ULTRA PERFECT CAST AUTO FISHING v35.2 (Safe Config Loading)
+-- ⚡ ULTRA PERFECT CAST AUTO FISHING v35.2 (RAW + BURN FIRST CAST)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+
 local localPlayer = Players.LocalPlayer
 local Character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 
+-- =========================================================
+-- CLEAN OLD INSTANCE
+-- =========================================================
 if _G.FishingScript then
     _G.FishingScript.Stop()
     task.wait(0.1)
 end
 
+-- =========================================================
+-- NET
+-- =========================================================
 local netFolder = ReplicatedStorage
     :WaitForChild("Packages")
     :WaitForChild("_Index")
     :WaitForChild("sleitnick_net@0.2.0")
     :WaitForChild("net")
 
-local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
-local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
-local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
-local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
-local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
-local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
-local RE_FishCaught = netFolder:WaitForChild("RE/FishCaught")
-local RE_FishingStopped = netFolder:WaitForChild("RE/FishingStopped")
+local RF_ChargeFishingRod      = netFolder:WaitForChild("RF/ChargeFishingRod")
+local RF_RequestMinigame       = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
+local RF_CancelFishingInputs   = netFolder:WaitForChild("RF/CancelFishingInputs")
+local RF_UpdateAutoFishingState= netFolder:WaitForChild("RF/UpdateAutoFishingState")
+local RE_FishingCompleted      = netFolder:WaitForChild("RE/FishingCompleted")
+local RE_MinigameChanged       = netFolder:WaitForChild("RE/FishingMinigameChanged")
+local RE_FishCaught            = netFolder:WaitForChild("RE/FishCaught")
+local RE_FishingStopped        = netFolder:WaitForChild("RE/FishingStopped")
 
--- ⭐ SAFE CONFIG LOADING
+-- =========================================================
+-- SAFE CONFIG
+-- =========================================================
 local function safeGetConfig(key, default)
     if _G.GetConfigValue and type(_G.GetConfigValue) == "function" then
-        local success, value = pcall(function()
+        local ok, v = pcall(function()
             return _G.GetConfigValue(key, default)
         end)
-        if success and value ~= nil then
-            return value
+        if ok and v ~= nil then
+            return v
         end
     end
     return default
 end
 
-local function loadSavedSettings()
-    local maxWait = safeGetConfig("InstantFishing.FishingDelay", 1.5)
-    local cancelDelay = safeGetConfig("InstantFishing.CancelDelay", 0.19)
-    return {
-        MaxWaitTime = maxWait,
-        CancelDelay = cancelDelay
-    }
-end
-
-local savedSettings = loadSavedSettings()
-
-local fishing = {
+local InstantPerfectAPI = {
     Running = false,
     WaitingHook = false,
+    BurnNextCast = false, -- 🔥 BURN FLAG
     CurrentCycle = 0,
     TotalFish = 0,
     PerfectCasts = 0,
@@ -68,235 +67,219 @@ local fishing = {
     Connections = {},
     Settings = {
         FishingDelay = 0.07,
-        CancelDelay = savedSettings.CancelDelay,
+        CancelDelay = safeGetConfig("InstantFishing.CancelDelay", 0.19),
         HookDetectionDelay = 0.03,
         RetryDelay = 0.04,
-        MaxWaitTime = savedSettings.MaxWaitTime,
+        MaxWaitTime = safeGetConfig("InstantFishing.FishingDelay", 1.5),
         FailTimeout = 2.5,
         PerfectChargeTime = 0.34,
         PerfectReleaseDelay = 0.005,
         PerfectPower = 0.95,
-        UseMultiDetection = true,
-        UseVisualDetection = true,
-        UseSoundDetection = false,
     }
 }
 
-_G.FishingScript = fishing
+_G.FishingScript = InstantPerfectAPI
 
+-- =========================================================
+-- INTERNAL HELPERS
+-- =========================================================
 local function refreshSettings()
-    fishing.Settings.MaxWaitTime =
-        safeGetConfig("InstantFishing.FishingDelay", fishing.Settings.MaxWaitTime)
-    fishing.Settings.CancelDelay =
-        safeGetConfig("InstantFishing.CancelDelay", fishing.Settings.CancelDelay)
+    InstantPerfectAPI.Settings.MaxWaitTime =
+        safeGetConfig("InstantFishing.FishingDelay", InstantPerfectAPI.Settings.MaxWaitTime)
+    InstantPerfectAPI.Settings.CancelDelay =
+        safeGetConfig("InstantFishing.CancelDelay", InstantPerfectAPI.Settings.CancelDelay)
 end
 
 local function disableFishingAnim()
     pcall(function()
         for _, track in pairs(Humanoid:GetPlayingAnimationTracks()) do
-            local name = track.Name:lower()
-            if name:find("fish") or name:find("rod") or name:find("cast") or name:find("reel") then
+            local n = track.Name:lower()
+            if n:find("fish") or n:find("rod") or n:find("cast") or n:find("reel") then
                 track:Stop(0)
                 track.TimePosition = 0
-            end
-        end
-    end)
-
-    task.spawn(function()
-        local rod = Character:FindFirstChild("Rod") or Character:FindFirstChildWhichIsA("Tool")
-        if rod and rod:FindFirstChild("Handle") then
-            local handle = rod.Handle
-            local weld = handle:FindFirstChildOfClass("Weld") or handle:FindFirstChildOfClass("Motor6D")
-            if weld then
-                weld.C0 = CFrame.new(0, -1, -1.2) * CFrame.Angles(math.rad(-10), 0, 0)
             end
         end
     end)
 end
 
 local function handleFailedCast()
-    fishing.WaitingHook = false
-    fishing.FailedCasts += 1
-
-    pcall(function()
-        RF_CancelFishingInputs:InvokeServer()
-    end)
-
-    task.wait(fishing.Settings.RetryDelay)
-
-    if fishing.Running then
-        fishing.PerfectCast()
+    InstantPerfectAPI.WaitingHook = false
+    InstantPerfectAPI.FailedCasts += 1
+    pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
+    task.wait(InstantPerfectAPI.Settings.RetryDelay)
+    if InstantPerfectAPI.Running then
+        InstantPerfectAPI.PerfectCast()
     end
 end
 
-function fishing.PerfectCast()
-    if not fishing.Running or fishing.WaitingHook then return end
+-- =========================================================
+-- CORE CAST (RAW + BURN)
+-- =========================================================
+function InstantPerfectAPI.PerfectCast()
+    if not InstantPerfectAPI.Running or InstantPerfectAPI.WaitingHook then
+        return
+    end
+
+    -- 🔥 BURN FIRST CAST (DUMMY)
+    if InstantPerfectAPI.BurnNextCast then
+        InstantPerfectAPI.BurnNextCast = false
+        return
+    end
 
     disableFishingAnim()
-    fishing.CurrentCycle += 1
+    InstantPerfectAPI.CurrentCycle += 1
 
-    local castSuccess = pcall(function()
+    local ok = pcall(function()
         local startTime = tick()
         RF_ChargeFishingRod:InvokeServer({[1] = startTime})
 
-        local endTime = tick() + fishing.Settings.PerfectChargeTime
-        while tick() < endTime and fishing.Running do
+        local endTime = tick() + InstantPerfectAPI.Settings.PerfectChargeTime
+        while tick() < endTime and InstantPerfectAPI.Running do
             task.wait(0.01)
         end
 
-        task.wait(fishing.Settings.PerfectReleaseDelay)
+        task.wait(InstantPerfectAPI.Settings.PerfectReleaseDelay)
 
-        local releaseTime = tick()
-        RF_RequestMinigame:InvokeServer(
-            fishing.Settings.PerfectPower,
+        local released = RF_RequestMinigame:InvokeServer(
+            InstantPerfectAPI.Settings.PerfectPower,
             0,
-            releaseTime
+            tick()
         )
 
-        fishing.WaitingHook = true
-        local hookDetected = false
-        local castStartTime = tick()
-        local eventDetection
+        if not released then
+            handleFailedCast()
+            return
+        end
 
-        eventDetection = RE_MinigameChanged.OnClientEvent:Connect(function(state)
+        InstantPerfectAPI.WaitingHook = true
+        local hookDetected = false
+        local castStart = tick()
+
+        local detectConn
+        detectConn = RE_MinigameChanged.OnClientEvent:Connect(function(state)
             if fishing.WaitingHook and typeof(state) == "string" then
                 local s = state:lower()
                 if s:find("hook") or s:find("bite") or s:find("catch") or s == "!" then
                     hookDetected = true
-                    eventDetection:Disconnect()
-                    fishing.WaitingHook = false
+                    detectConn:Disconnect()
 
-                    task.wait(fishing.Settings.HookDetectionDelay)
-                    RE_FishingCompleted:FireServer()
+                    InstantPerfectAPI.WaitingHook = false
+                    InstantPerfectAPI.BurnNextCast = true -- 🔥 SET BURN
 
-                    task.wait(fishing.Settings.CancelDelay)
-                    RF_CancelFishingInputs:InvokeServer()
+                    task.wait(InstantPerfectAPI.Settings.HookDetectionDelay)
+                    pcall(RE_FishingCompleted.FireServer, RE_FishingCompleted)
+                    task.wait(InstantPerfectAPI.Settings.CancelDelay)
+                    pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
+                    task.wait(InstantPerfectAPI.Settings.FishingDelay)
 
-                    task.wait(fishing.Settings.FishingDelay)
-                    if fishing.Running then fishing.PerfectCast() end
+                    if InstantPerfectAPI.Running then
+                        InstantPerfectAPI.PerfectCast()
+                    end
                 end
             end
         end)
 
-        task.delay(fishing.Settings.MaxWaitTime, function()
-            if fishing.WaitingHook and fishing.Running and not hookDetected then
-                fishing.WaitingHook = false
-                eventDetection:Disconnect()
+        task.delay(InstantPerfectAPI.Settings.MaxWaitTime, function()
+            if InstantPerfectAPI.WaitingHook and InstantPerfectAPI.Running then
+                InstantPerfectAPI.WaitingHook = false
+                detectConn:Disconnect()
+                InstantPerfectAPI.BurnNextCast = true -- 🔥 SET BURN
 
-                RE_FishingCompleted:FireServer()
-                task.wait(fishing.Settings.RetryDelay)
-                RF_CancelFishingInputs:InvokeServer()
+                pcall(RE_FishingCompleted.FireServer, RE_FishingCompleted)
+                task.wait(InstantPerfectAPI.Settings.RetryDelay)
+                pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
+                task.wait(InstantPerfectAPI.Settings.FishingDelay)
 
-                task.wait(fishing.Settings.FishingDelay)
-                if fishing.Running then fishing.PerfectCast() end
+                if InstantPerfectAPI.Running then
+                    InstantPerfectAPI.PerfectCast()
+                end
             end
         end)
 
-        task.delay(fishing.Settings.FailTimeout, function()
-            if fishing.WaitingHook and fishing.Running then
-                if tick() - castStartTime >= fishing.Settings.FailTimeout then
-                    if eventDetection then eventDetection:Disconnect() end
+        task.delay(InstantPerfectAPI.Settings.FailTimeout, function()
+            if InstantPerfectAPI.WaitingHook and InstantPerfectAPI.Running then
+                if tick() - castStart >= InstantPerfectAPI.Settings.FailTimeout then
+                    detectConn:Disconnect()
                     handleFailedCast()
                 end
             end
         end)
     end)
 
-    if not castSuccess then
-        task.wait(fishing.Settings.RetryDelay)
-        if fishing.Running then fishing.PerfectCast() end
+    if not ok then
+        task.wait(InstantPerfectAPI.Settings.RetryDelay)
+        if InstantPerfectAPI.Running then
+            InstantPerfectAPI.PerfectCast()
+        end
     end
 end
 
-function fishing.Start()
-    if fishing.Running then return end
-
+-- =========================================================
+-- START / STOP
+-- =========================================================
+function InstantPerfectAPI.Start()
+    if InstantPerfectAPI.Running then return end
     refreshSettings()
-    fishing.Running = true
-    fishing.CurrentCycle = 0
-    fishing.TotalFish = 0
-    fishing.PerfectCasts = 0
-    fishing.AmazingCasts = 0
-    fishing.FailedCasts = 0
+
+    InstantPerfectAPI.Running = true
+    InstantPerfectAPI.WaitingHook = false
+    InstantPerfectAPI.BurnNextCast = false
 
     disableFishingAnim()
 
-    fishing.Connections.FishingStopped =
+    InstantPerfectAPI.Connections.Caught =
+        RE_FishCaught.OnClientEvent:Connect(function(_, data)
+            if InstantPerfectAPI.Running then
+                InstantPerfectAPI.WaitingHook = false
+                InstantPerfectAPI.TotalFish += 1
+                InstantPerfectAPI.BurnNextCast = true -- 🔥 SET BURN
+
+                task.wait(InstantPerfectAPI.Settings.CancelDelay)
+                pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
+                task.wait(InstantPerfectAPI.Settings.FishingDelay)
+
+                if InstantPerfectAPI.Running then
+                    InstantPerfectAPI.PerfectCast()
+                end
+            end
+        end)
+
+    InstantPerfectAPI.Connections.Stopped =
         RE_FishingStopped.OnClientEvent:Connect(function()
-            if fishing.Running and fishing.WaitingHook then
+            if InstantPerfectAPI.Running and InstantPerfectAPI.WaitingHook then
                 handleFailedCast()
             end
         end)
 
-    fishing.Connections.Caught =
-        RE_FishCaught.OnClientEvent:Connect(function(_, data)
-            if fishing.Running then
-                fishing.WaitingHook = false
-                fishing.TotalFish += 1
-
-                task.wait(fishing.Settings.CancelDelay)
-                RF_CancelFishingInputs:InvokeServer()
-
-                task.wait(fishing.Settings.FishingDelay)
-                if fishing.Running then fishing.PerfectCast() end
-            end
-        end)
-
-    fishing.Connections.AnimDisabler =
+    InstantPerfectAPI.Connections.Anim =
         task.spawn(function()
-            while fishing.Running do
+            while InstantPerfectAPI.Running do
                 disableFishingAnim()
                 task.wait(0.1)
             end
         end)
 
     task.wait(0.3)
-    fishing.PerfectCast()
+    InstantPerfectAPI.PerfectCast()
 end
 
-function fishing.Stop()
-    if not fishing.Running then return end
-    fishing.Running = false
-    fishing.WaitingHook = false
+function InstantPerfectAPI.Stop()
+    if not InstantPerfectAPI.Running then return end
+    InstantPerfectAPI.Running = false
+    InstantPerfectAPI.WaitingHook = false
 
-    for _, conn in pairs(fishing.Connections) do
-        if typeof(conn) == "RBXScriptConnection" then
-            conn:Disconnect()
-        elseif typeof(conn) == "thread" then
-            task.cancel(conn)
+    for _, c in pairs(InstantPerfectAPI.Connections) do
+        if typeof(c) == "RBXScriptConnection" then
+            c:Disconnect()
+        elseif typeof(c) == "thread" then
+            task.cancel(c)
         end
     end
 
     fishing.Connections = {}
-
-    RF_UpdateAutoFishingState:InvokeServer(true)
+    pcall(RF_UpdateAutoFishingState.InvokeServer, RF_UpdateAutoFishingState)
     task.wait(0.2)
-    RF_CancelFishingInputs:InvokeServer()
-end
-
-function fishing.UpdateSettings(maxWaitTime, cancelDelay)
-    if maxWaitTime then fishing.Settings.MaxWaitTime = maxWaitTime end
-    if cancelDelay then fishing.Settings.CancelDelay = cancelDelay end
-end
-
--- =========================================================
--- API WRAPPER ONLY
--- =========================================================
-function InstantPerfectAPI.Start()
-    if _G.FishingScript then
-        pcall(function() _G.FishingScript.Stop() end)
-        task.wait(0.1)
-    end
-    _G.FishingScript = fishing
-    fishing.Start()
-end
-
-function InstantPerfectAPI.Stop()
-    fishing.Stop()
-end
-
-function InstantPerfectAPI.SetDelay(maxWait, cancelDelay)
-    fishing.UpdateSettings(maxWait, cancelDelay)
+    pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
 end
 
 return InstantPerfectAPI

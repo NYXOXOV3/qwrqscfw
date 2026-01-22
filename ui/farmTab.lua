@@ -299,11 +299,12 @@ blatantv2:Toggle({
     end
 })
 
-local blatantv3 = farm:Section({ Title = "Blatant V3" })
+local blatantv3 = farm:Section({ Title = "Auto Perfect" })
 
 blatantv3:Input({
         Title = "Fishing Delay",
         Default = "0.05",
+        Placeholder = "0.05",
         Callback = function(v)
             BlatantV3FixAPI.UpdateSettings(tonumber(v), nil, nil, nil, nil)
         end
@@ -312,6 +313,7 @@ blatantv3:Input({
     blatantv3:Input({
         Title = "Cancel Delay",
         Default = "0.01",
+        Placeholder = "0.01",
         Callback = function(v)
             BlatantV3FixAPI.UpdateSettings(nil, tonumber(v), nil, nil, nil)
         end
@@ -320,6 +322,7 @@ blatantv3:Input({
     blatantv3:Input({
         Title = "Timeout Delay",
         Default = "0.8",
+        Placeholder = "0.8",
         Callback = function(v)
             BlatantV3FixAPI.UpdateSettings(nil, nil, nil, nil, tonumber(v))
         end

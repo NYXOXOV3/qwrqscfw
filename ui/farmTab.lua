@@ -42,6 +42,11 @@ if not UltraBlatantAPI then
     warn("[FarmTab] UltraBlatantAPI not loaded")
     return
 end
+local UltraBlatantV2 = _G.NYXHUB.Modules["farm/blatant2API.lua"]
+if not UltraBlatantV2 then
+    warn("[FarmTab] UltraBlatantV2 API not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -230,3 +235,61 @@ blatantv1:Toggle({
     end
 })
 
+local blatantv2 = farm:Section({ Title = "Blatant V2" })
+
+blatantv2:Input({
+    Title = "Complete Delay",
+    Placeholder = "0.73",
+    Default = tostring(UltraBlatantV2.Settings.CompleteDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            UltraBlatantV2.UpdateSettings(n, nil, nil)
+        end
+    end
+})
+
+blatantv2:Input({
+    Title = "Cancel Delay",
+    Placeholder = "0.3",
+    Default = tostring(UltraBlatantV2.Settings.CancelDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            UltraBlatantV2.UpdateSettings(nil, n, nil)
+        end
+    end
+})
+
+blatantv2:Input({
+    Title = "ReCast Delay",
+    Placeholder = "0.001",
+    Default = tostring(UltraBlatantV2.Settings.ReCastDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            UltraBlatantV2.UpdateSettings(nil, nil, n)
+        end
+    end
+})
+
+blatantv2:Toggle({
+    Title = "Ultra Blatant V2",
+    Callback = function(state)
+        if state then
+            UltraBlatantV2.Start()
+            WindUI:Notify({
+                Title = "Ultra Blatant V2 ON",
+                Duration = 2,
+                Icon = "zap"
+            })
+        else
+            UltraBlatantV2.Stop()
+            WindUI:Notify({
+                Title = "Ultra Blatant V2 OFF",
+                Duration = 2,
+                Icon = "x"
+            })
+        end
+    end
+})

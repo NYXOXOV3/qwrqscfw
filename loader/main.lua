@@ -83,6 +83,7 @@ local METHOD_LIST = {
 
     "farm/autoclickAPI.lua",
     "farm/legitAPI.lua",
+    "farm/blatantAPI.lua",
     "farm/blatant1API.lua",
     "farm/blatant2API.lua",
     "farm/blatant3API.lua",

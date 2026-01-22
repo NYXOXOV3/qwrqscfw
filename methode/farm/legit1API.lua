@@ -221,7 +221,7 @@ function fishing.UpdateSettings(maxWait, cancelDelay)
 end
 
 -- ================= PUBLIC API =================
-function Instant1API.Start()
+function Legit1API.Start()
     if _G.FishingScriptFast then
         _G.FishingScriptFast.Stop()
         task.wait(0.1)
@@ -230,11 +230,11 @@ function Instant1API.Start()
     fishing.Start()
 end
 
-function Instant1API.Stop()
+function Legit1API.Stop()
     fishing.Stop()
 end
 
-function Instant1API.SetDelay(maxWait, cancelDelay)
+function Legit1API.SetDelay(maxWait, cancelDelay)
     fishing.UpdateSettings(maxWait, cancelDelay)
 end
 

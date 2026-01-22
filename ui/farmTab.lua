@@ -33,7 +33,7 @@ local farm = Window:Tab({
     Icon = "fish",
 })
 
-local auto = farm:Section({ Title = "Auto Fishing" })
+local auto = farm:Section({ Title = "Auto Click" })
 
 auto:Slider({
     Title = "Legit Click Speed",
@@ -43,7 +43,7 @@ auto:Slider({
 })
 
 auto:Toggle({
-    Title = "Auto Fish (Legit)",
+    Title = "Auto Click",
     Callback = function(v)
         AutoClickAPI.Stop()
         BlatantAPI.Stop()
@@ -51,16 +51,16 @@ auto:Toggle({
     end
 })
 
-farm:Divider()
+local legit = farm:Section({ Title = "Legit"})     
 
-auto:Slider({
+legit:Slider({
     Title = "Normal Complete Delay",
     Step = 0.05,
     Value = { Min = 0.5, Max = 5, Default = 1.5 },
     Callback = AutoClickAPI.SetDelay
 })
 
-auto:Toggle({
+legit:Toggle({
     Title = "Normal Instant Fish",
     Callback = function(v)
         LegitAPI.Stop()
@@ -69,7 +69,7 @@ auto:Toggle({
     end
 })
 
-farm:Divider()
+
 
 local blatant = farm:Section({ Title = "Blatant Mode" })
 

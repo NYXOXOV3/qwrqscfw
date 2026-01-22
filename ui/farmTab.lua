@@ -75,7 +75,7 @@ auto:Toggle({
         if v then LegitAPI.Start() else LegitAPI.Stop() end
     end
 })
-
+auto:Divider()
 local legit = farm:Section({ Title = "Legit"})     
 
 legit:Slider({
@@ -93,7 +93,7 @@ legit:Toggle({
         if v then AutoClickAPI.Start() else AutoClickAPI.Stop() end
     end
 })
-
+legit:Divider()
 local legit1  = farm:Section({ Title = "Legit V1" })
 
 legit1:Input({
@@ -130,7 +130,7 @@ legit1:Toggle({
         end
     end
 })
-
+legit1:Divider()
 local legit2 = farm:Section({ Title  = "Legit v2" })
 
 legit2:Input({
@@ -163,7 +163,7 @@ legit2:Toggle({
         end
     end
 })
-
+legit2:Divider()
 local blatant = farm:Section({ Title = "Blatant Stabil" })
 
 blatant:Toggle({
@@ -192,7 +192,7 @@ blatant:Input({
         BlatantAPI.SetDelay(nil, tonumber(v))
     end
 })
-
+blatant:Divider()
 local blatantv1 = farm:Section({ Title = "Blatant V1" })
 
 blatantv1:Input({
@@ -239,7 +239,7 @@ blatantv1:Toggle({
         end
     end
 })
-
+blatantv1:Divider()
 local blatantv2 = farm:Section({ Title = "Blatant V2" })
 
 blatantv2:Input({
@@ -298,7 +298,7 @@ blatantv2:Toggle({
         end
     end
 })
-
+blatantv2:Divider()
 local blatantv3 = farm:Section({ Title = "Auto Perfect" })
 
 blatantv3:Input({
@@ -356,3 +356,4 @@ blatantv3:Input({
             end
         end
     })
+blatantv3:Divider()

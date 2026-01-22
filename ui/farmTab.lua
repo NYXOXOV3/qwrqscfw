@@ -11,15 +11,35 @@ end
 local Window = _G.NYXHUB.Window
 local WindUI = _G.NYXHUB.WindUI
 
--- Load fishing API
+-- Load fishing API dari cache NYXHUB
 local FishingAPI
 local function LoadFishingAPI()
+    -- Coba ambil dari cache NYXHUB terlebih dahulu
+    if _G.NYXHUB.Modules and _G.NYXHUB.Modules["farm/legitAPI.lua"] then
+        FishingAPI = _G.NYXHUB.Modules["farm/legitAPI.lua"]
+        return true
+    end
+    
+    -- Jika tidak ada di cache, load dari source
     local success, result = pcall(function()
-        return require(_G.NYXHUB.Modules["farm/legitAPI.lua"])
+        -- Dapatkan ModuleScript dari ReplicatedStorage atau tempat lain
+        local modulesFolder = _G.NYXHUB.ModulesFolder
+        if modulesFolder then
+            local moduleScript = modulesFolder:FindFirstChild("farm/legitAPI.lua") 
+                             or modulesFolder:FindFirstChild("legitAPI")
+            if moduleScript then
+                return require(moduleScript)
+            end
+        end
+        return nil
     end)
     
-    if success then
+    if success and result then
         FishingAPI = result
+        -- Simpan ke cache
+        if _G.NYXHUB.Modules then
+            _G.NYXHUB.Modules["farm/legitAPI.lua"] = result
+        end
         return true
     else
         warn("[NYXHUB][FarmTab] Failed to load FishingAPI:", result)
@@ -48,39 +68,39 @@ local modeDropdown = tab:Dropdown({
     Values = {"Instant V1", "Instant V2", "Instant X2"},
     Default = "Instant V1",
     Callback = function(value)
-        if FishingAPI then
-            FishingAPI.SetMode(value)
-            
-            -- Update sliders based on mode
-            local defaults = {
-                ["Instant V1"] = {fishingDelay = 0.01, cancelDelay = 0.19},
-                ["Instant V2"] = {fishingDelay = 0.07, cancelDelay = 0.19},
-                ["Instant X2"] = {fishingDelay = 0.30, cancelDelay = 0.05}
-            }
-            
-            local default = defaults[value]
-            if default then
-                FishingAPI.UpdateFishingSettings(default.fishingDelay, default.cancelDelay)
-                if fishingDelaySlider then
-                    fishingDelaySlider:Set(default.fishingDelay)
-                end
-                if cancelDelaySlider then
-                    cancelDelaySlider:Set(default.cancelDelay)
-                end
+        if not FishingAPI and not LoadFishingAPI() then return end
+        
+        FishingAPI.SetMode(value)
+        
+        -- Update sliders based on mode
+        local defaults = {
+            ["Instant V1"] = {fishingDelay = 0.01, cancelDelay = 0.19},
+            ["Instant V2"] = {fishingDelay = 0.07, cancelDelay = 0.19},
+            ["Instant X2"] = {fishingDelay = 0.30, cancelDelay = 0.05}
+        }
+        
+        local default = defaults[value]
+        if default then
+            FishingAPI.UpdateFishingSettings(default.fishingDelay, default.cancelDelay)
+            if fishingDelaySlider then
+                fishingDelaySlider:Set(default.fishingDelay)
             end
-            
-            WindUI:Notify({
-                Title = "Mode Changed",
-                Content = value .. " activated",
-                Duration = 2,
-                Icon = "settings",
-            })
+            if cancelDelaySlider then
+                cancelDelaySlider:Set(default.cancelDelay)
+            end
         end
+        
+        WindUI:Notify({
+            Title = "Mode Changed",
+            Content = value .. " activated",
+            Duration = 2,
+            Icon = "settings",
+        })
     end,
 })
 
 -- Status Display
-local statusLabel = tab:Paragraph({
+local statusLabel = tab:Label({
     Title = "Status: Not Running",
     Desc = "Fish Caught: 0 | Cycles: 0"
 })
@@ -124,15 +144,15 @@ local fishingDelaySlider = tab:Slider({
         Default = 0.01,
     },
     Callback = function(value)
-        if FishingAPI then
-            FishingAPI.UpdateFishingSettings(value, nil)
-            WindUI:Notify({
-                Title = "Fishing Delay Updated",
-                Content = "Set to " .. tostring(value) .. " seconds",
-                Duration = 2,
-                Icon = "timer",
-            })
-        end
+        if not FishingAPI and not LoadFishingAPI() then return end
+        
+        FishingAPI.UpdateFishingSettings(value, nil)
+        WindUI:Notify({
+            Title = "Fishing Delay Updated",
+            Content = "Set to " .. tostring(value) .. " seconds",
+            Duration = 2,
+            Icon = "timer",
+        })
     end,
 })
 
@@ -147,19 +167,19 @@ local cancelDelaySlider = tab:Slider({
         Default = 0.19,
     },
     Callback = function(value)
-        if FishingAPI then
-            FishingAPI.UpdateFishingSettings(nil, value)
-            WindUI:Notify({
-                Title = "Cancel Delay Updated",
-                Content = "Set to " .. tostring(value) .. " seconds",
-                Duration = 2,
-                Icon = "timer",
-            })
-        end
+        if not FishingAPI and not LoadFishingAPI() then return end
+        
+        FishingAPI.UpdateFishingSettings(nil, value)
+        WindUI:Notify({
+            Title = "Cancel Delay Updated",
+            Content = "Set to " .. tostring(value) .. " seconds",
+            Duration = 2,
+            Icon = "timer",
+        })
     end,
 })
 
--- Start/Stop Button
+-- Start Button
 tab:Button({
     Title = "Start Fishing",
     Icon = "play",
@@ -193,47 +213,56 @@ tab:Button({
     Icon = "stop",
     Locked = false,
     Callback = function()
-        if FishingAPI then
-            FishingAPI.StopFishing()
-            fishingToggle:Set(false)
-            
+        if not FishingAPI and not LoadFishingAPI() then
             WindUI:Notify({
-                Title = "Fishing Stopped",
-                Content = "Auto fishing has been stopped",
-                Duration = 2,
-                Icon = "stop",
+                Title = "Error",
+                Content = "Fishing API not loaded",
+                Duration = 3,
+                Icon = "alert-triangle",
             })
+            return
         end
+        
+        FishingAPI.StopFishing()
+        fishingToggle:Set(false)
+        
+        WindUI:Notify({
+            Title = "Fishing Stopped",
+            Content = "Auto fishing has been stopped",
+            Duration = 2,
+            Icon = "stop",
+        })
     end
 })
 
--- Detailed Stats Button
+-- Get Status Button
 tab:Button({
-    Title = "Detailed Stats",
-    Icon = "bar-chart",
+    Title = "Refresh Status",
+    Icon = "refresh-cw",
     Locked = false,
     Callback = function()
-        if FishingAPI then
-            local status = FishingAPI.GetStatus()
-            local mode = modeDropdown:Get()
-            
-            local statsText = string.format(
-                "Mode: %s\nFish Caught: %d\nCycles: %d\nPerfect Casts: %d\nAmazing Casts: %d\nFailed Casts: %d",
-                mode,
-                status.TotalFish,
-                status.CurrentCycle,
-                status.PerfectCasts,
-                status.AmazingCasts,
-                status.FailedCasts
-            )
-            
+        if not FishingAPI and not LoadFishingAPI() then
             WindUI:Notify({
-                Title = "Fishing Statistics",
-                Content = statsText,
-                Duration = 5,
-                Icon = "info",
+                Title = "Error",
+                Content = "Fishing API not loaded",
+                Duration = 3,
+                Icon = "alert-triangle",
             })
+            return
         end
+        
+        local status = FishingAPI.GetStatus()
+        statusLabel:Set({
+            Title = "Status: " .. (status.Running and "Running" or "Stopped"),
+            Desc = string.format("Fish Caught: %d | Cycles: %d", status.TotalFish, status.CurrentCycle)
+        })
+        
+        WindUI:Notify({
+            Title = "Status Updated",
+            Content = string.format("Fish: %d | Cycles: %d", status.TotalFish, status.CurrentCycle),
+            Duration = 2,
+            Icon = "info",
+        })
     end
 })
 
@@ -245,19 +274,88 @@ tab:Section({
     TextSize = 16,
 })
 
-tab:Paragraph({
+tab:Label({
     Title = "Instant V1",
     Desc = "Ultra Speed (v29.4) - Fastest mode"
 })
 
-tab:Paragraph({
+tab:Label({
     Title = "Instant V2", 
     Desc = "Perfect Cast (v35.2) - Better accuracy"
 })
 
-tab:Paragraph({
+tab:Label({
     Title = "Instant X2",
     Desc = "2X Speed - Balanced speed & safety"
+})
+
+-- =========================
+-- SETTINGS SECTION
+-- =========================
+tab:Section({
+    Title = "Settings",
+    TextSize = 18,
+})
+
+-- Reset to Default Button
+tab:Button({
+    Title = "Reset to Default",
+    Icon = "rotate-ccw",
+    Locked = false,
+    Callback = function()
+        if not FishingAPI and not LoadFishingAPI() then return end
+        
+        local mode = modeDropdown:Get()
+        local defaults = {
+            ["Instant V1"] = {fishingDelay = 0.01, cancelDelay = 0.19},
+            ["Instant V2"] = {fishingDelay = 0.07, cancelDelay = 0.19},
+            ["Instant X2"] = {fishingDelay = 0.30, cancelDelay = 0.05}
+        }
+        
+        local default = defaults[mode] or defaults["Instant V1"]
+        FishingAPI.UpdateFishingSettings(default.fishingDelay, default.cancelDelay)
+        fishingDelaySlider:Set(default.fishingDelay)
+        cancelDelaySlider:Set(default.cancelDelay)
+        
+        WindUI:Notify({
+            Title = "Settings Reset",
+            Content = "All delays reset to default values",
+            Duration = 2,
+            Icon = "check",
+        })
+    end
+})
+
+-- Quick Presets
+tab:Dropdown({
+    Title = "Quick Presets",
+    Desc = "Select a preset configuration",
+    Values = {"Fast", "Safe", "Balanced", "Slow"},
+    Default = "Balanced",
+    Callback = function(value)
+        if not FishingAPI and not LoadFishingAPI() then return end
+        
+        local presets = {
+            Fast = {fishingDelay = 0.01, cancelDelay = 0.10},
+            Safe = {fishingDelay = 0.05, cancelDelay = 0.25},
+            Balanced = {fishingDelay = 0.01, cancelDelay = 0.19},
+            Slow = {fishingDelay = 0.10, cancelDelay = 0.30}
+        }
+        
+        local preset = presets[value]
+        if preset then
+            FishingAPI.UpdateFishingSettings(preset.fishingDelay, preset.cancelDelay)
+            fishingDelaySlider:Set(preset.fishingDelay)
+            cancelDelaySlider:Set(preset.cancelDelay)
+            
+            WindUI:Notify({
+                Title = "Preset Applied",
+                Content = value .. " preset loaded",
+                Duration = 2,
+                Icon = "settings",
+            })
+        end
+    end,
 })
 
 -- =========================
@@ -276,10 +374,9 @@ task.spawn(function()
                 )
                 
                 local descText = string.format(
-                    "Fish: %d | Cycles: %d | Perfect: %d",
+                    "Fish: %d | Cycles: %d",
                     status.TotalFish,
-                    status.CurrentCycle,
-                    status.PerfectCasts
+                    status.CurrentCycle
                 )
                 
                 statusLabel:Set({
@@ -290,41 +387,5 @@ task.spawn(function()
         end
     end
 end)
-
--- =========================
--- OTHER FARM FEATURES
--- =========================
-tab:Section({
-    Title = "Other Farm Features",
-    TextSize = 18,
-})
-
-tab:Toggle({
-    Title = "Auto Collect",
-    Desc = "Automatically collect nearby items",
-    Default = false,
-    Callback = function(state)
-        WindUI:Notify({
-            Title = "Auto Collect",
-            Content = state and "Enabled" or "Disabled",
-            Duration = 2,
-            Icon = state and "check" or "x",
-        })
-    end,
-})
-
-tab:Toggle({
-    Title = "Auto Sell",
-    Desc = "Automatically sell items",
-    Default = false,
-    Callback = function(state)
-        WindUI:Notify({
-            Title = "Auto Sell",
-            Content = state and "Enabled" or "Disabled",
-            Duration = 2,
-            Icon = state and "check" or "x",
-        })
-    end,
-})
 
 warn("[NYXHUB][FarmTab] Loaded successfully")

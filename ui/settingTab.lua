@@ -26,12 +26,12 @@ local tab = Window:Tab({
 -- =========================
 -- SECURITY SECTION
 -- =========================
-tab:Section({
+local security = tab:Section({
     Title = "Security",
     TextSize = 20,
 })
 
-tab:Toggle({
+security:Toggle({
     Title = "Hide Username (Solace)",
     Desc = "Hide your real username & display name",
     Default = _G.SolaceDisguise == true,
@@ -40,7 +40,7 @@ tab:Toggle({
     end,
 })
 
-tab:Toggle({
+security:Toggle({
     Title = "Anti Staff",
     Desc = "Detect staff/moderator joining the server",
     Default = _G.AntiStaffEnabled == true,
@@ -59,13 +59,13 @@ if not MovementAPI then
     return
 end
 
-tab:Section({
+local movement = tab:Section({
     Title = "Movement",
     TextSize = 20,
 })
 
 -- 1. SLIDER WALKSPEED
-local SliderSpeed = tab:Slider({
+local SliderSpeed = movement:Slider({
     Title = "WalkSpeed",
     Step = 1,
     Value = {
@@ -79,7 +79,7 @@ local SliderSpeed = tab:Slider({
 })
 
 -- 2. SLIDER JUMPPOWER
-local SliderJump = tab:Slider({
+local SliderJump = movement:Slider({
     Title = "JumpPower",
     Step = 1,
     Value = {
@@ -93,7 +93,7 @@ local SliderJump = tab:Slider({
 })
 
 -- 3. RESET BUTTON
-tab:Button({
+movement:Button({
     Title = "Reset Movement",
     Icon = "rotate-ccw",
     Locked = false,
@@ -122,13 +122,13 @@ if not ModesAPI then
     return
 end
 
-tab:Section({
+local modes = tab:Section({
     Title = "Modes",
     TextSize = 20,
 })
 
 -- 1. Infinite Jump
-tab:Toggle({
+modes:Toggle({
     Title = "Infinite Jump",
     Desc = "Jump without limit",
     Default = false,
@@ -138,7 +138,7 @@ tab:Toggle({
 })
 
 -- 2. No Clip
-tab:Toggle({
+modes:Toggle({
     Title = "No Clip",
     Desc = "Walk through objects",
     Default = false,
@@ -148,7 +148,7 @@ tab:Toggle({
 })
 
 -- 3. Walk on Water
-tab:Toggle({
+modes:Toggle({
     Title = "Walk on Water",
     Desc = "Walk on terrain water",
     Default = false,
@@ -158,7 +158,7 @@ tab:Toggle({
 })
 
 -- 4. Infinite Zoom
-tab:Toggle({
+modes:Toggle({
     Title = "Infinite Zoom",
     Desc = "Unlimited camera zoom",
     Default = false,
@@ -168,7 +168,7 @@ tab:Toggle({
 })
 
 -- 5. Freecam
-tab:Toggle({
+modes:Toggle({
     Title = "Freecam",
     Desc = "Detach camera and fly freely",
     Default = false,
@@ -188,23 +188,23 @@ if not VisualAPI then
 end
 
 
-tab:Section({ Title = "Visual", TextSize = 20 })
+local visual = tab:Section({ Title = "Visual", TextSize = 20 })
 
-tab:Toggle({
+visual:Toggle({
     Title = "FPS Boost",
     Callback = function(v)
         VisualAPI.ToggleFPSBoost(v)
     end,
 })
 
-tab:Toggle({
+visual:Toggle({
     Title = "Disable 3D Rendering",
     Callback = function(v)
         VisualAPI.ToggleDisable3D(v)
     end,
 })
 
-tab:Dropdown({
+visual:Dropdown({
     Title = "FPS Limit",
     Values = {"30","60","90","120","144","165","240"},
     Default = tostring(VisualAPI.UnlockFPS.Selected),
@@ -213,14 +213,14 @@ tab:Dropdown({
     end,
 })
 
-tab:Toggle({
+visual:Toggle({
     Title = "Unlock FPS",
     Callback = function(v)
         VisualAPI.ToggleUnlockFPS(v)
     end,
 })
 
-tab:Toggle({
+visual:Toggle({
     Title = "Ping Panel",
     Desc = "Show FPS & Ping",
     Default = false,
@@ -229,7 +229,7 @@ tab:Toggle({
     end,
 })
 
-tab:Toggle({
+visual:Toggle({
     Title = "Player ESP",
     Callback = function(v)
         VisualAPI.ToggleESP(v)
@@ -240,9 +240,9 @@ tab:Toggle({
 -- EXTERNAL SECTION
 -- =========================================================
 
-tab:Section({ Title = "External", TextSize = 20 })
+local external = tab:Section({ Title = "External", TextSize = 20 })
 
-tab:Button({
+external:Button({
     Title = "Fly",
     Desc = "Fly Gui",
     Locked = false,

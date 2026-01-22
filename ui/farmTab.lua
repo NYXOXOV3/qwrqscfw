@@ -167,6 +167,7 @@ blatant:Toggle({
 blatant:Input({
     Title = "Cancel Delay",
     Default = "1.75",
+    Placeholder = "1.75",
     Callback = function(v)
         BlatantAPI.SetDelay(tonumber(v), nil)
     end
@@ -175,6 +176,7 @@ blatant:Input({
 blatant:Input({
     Title = "Complete Delay",
     Default = "1.33",
+    Placeholder = "1.33",
     Callback = function(v)
         BlatantAPI.SetDelay(nil, tonumber(v))
     end

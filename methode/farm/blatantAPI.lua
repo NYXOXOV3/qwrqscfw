@@ -28,7 +28,7 @@ local originalCharge = FC.RequestChargeFishingRod
 -- ================= RAW CONFIG =================
 local Config = {
     Active = false,
-    Mode = "Old",        -- Old / New
+    Mode = "New",        -- Old / New
     CancelDelay = 1.75,
     CompleteDelay = 1.33,
     AutoPerfect = false,

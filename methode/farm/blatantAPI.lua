@@ -7,14 +7,12 @@ local BlatantAPI = {}
 -- ================= SERVICES =================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ================= CONTROLLER =================
-local FC = require(
-    ReplicatedStorage:WaitForChild("Controllers").FishingController
-)
-
 -- ================= REMOTES =================
 local Net = ReplicatedStorage
-    .Packages._Index["sleitnick_net@0.2.0"].net
+    :WaitForChild("Packages")
+    :WaitForChild("_Index")
+    :WaitForChild("sleitnick_net@0.2.0")
+    :WaitForChild("net")
 
 local RF_Charge   = Net["RF/ChargeFishingRod"]
 local RF_Start    = Net["RF/RequestFishingMinigameStarted"]
@@ -33,11 +31,19 @@ BlatantAPI.Config = {
 
 local mainThread
 local equipThread
+local FC -- ⚠️ LAZY LOAD
 
 -- ================= CORE =================
 function BlatantAPI.Start()
     if BlatantAPI.Config.Active then return end
     BlatantAPI.Config.Active = true
+
+    -- ✅ REQUIRE CONTROLLER DI SINI (AMAN)
+    if not FC then
+        FC = require(
+            ReplicatedStorage:WaitForChild("Controllers"):WaitForChild("FishingController")
+        )
+    end
 
     equipThread = task.spawn(function()
         while BlatantAPI.Config.Active do

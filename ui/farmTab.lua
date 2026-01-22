@@ -32,9 +32,9 @@ if not Legit1API then
     warn("[NYXHUB][FarmTab] Legit1API not loaded.")
     return
 end
-local Instant2XAPI = _G.NYXHUB.Modules["farm/legit2API.lua"]
-if not Instant2XAPI then
-    warn("[FarmTab] Instant2XAPI not loaded")
+local PerfectAPI = _G.NYXHUB.Modules["farm/legit2API.lua"]
+if not PerfectAPI then
+    warn("[FarmTab] InstantPerfectAPI not loaded")
     return
 end
 
@@ -120,35 +120,31 @@ local legit2 = farm:Section({ Title  = "Legit v2" })
 
 legit2:Input({
     Title = "Fishing Delay",
-    Placeholder = "0.30",
-    Default = "0.30",
+    Placeholder = "1.50",
+    Default = "1.50",
     Callback = function(v)
         local n = tonumber(v)
-        if n and n >= 0 then
-            Instant2XAPI.SetDelay(n, nil)
-        end
+        if n then PerfectAPI.SetDelay(n, nil) end
     end
 })
 
 legit2:Input({
     Title = "Cancel Delay",
-    Placeholder = "0.05",
-    Default = "0.05",
+    Placeholder = "0.19",
+    Default = "0.19",
     Callback = function(v)
         local n = tonumber(v)
-        if n and n >= 0 then
-            Instant2XAPI.SetDelay(nil, n)
-        end
+        if n then PerfectAPI.SetDelay(nil, n) end
     end
 })
 
 legit2:Toggle({
-    Title = "Enable Instant 2X",
+    Title = "Enable Instant Perfect",
     Callback = function(state)
         if state then
-            Instant2XAPI.Start()
+            PerfectAPI.Start()
         else
-            Instant2XAPI.Stop()
+            PerfectAPI.Stop()
         end
     end
 })

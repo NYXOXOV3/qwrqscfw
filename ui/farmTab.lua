@@ -319,6 +319,24 @@ blatantv3:Input({
         end
     })
 
+    blatantv3::Input({
+        Title = "Hook Wait Time",
+        Default = "0.01",
+        Placeholder = "0.01",
+        Callback = function(v)
+            BlatantV3FixAPI.UpdateSettings(nil, nil, tonumber(v), nil, nil)
+        end
+    })
+
+    blatantv3:Input({
+        Title = "Cast Delay",
+        Default = "0.25",
+        Placeholder = "0.25",
+        Callback = function(v)
+            BlatantV3FixAPI.UpdateSettings(nil, nil, nil, tonumber(v), nil)
+        end
+    })
+
     blatantv3:Input({
         Title = "Timeout Delay",
         Default = "0.8",
@@ -329,7 +347,7 @@ blatantv3:Input({
     })
 
     blatantv3:Toggle({
-        Title = "Enable Blatant V3 Fix",
+        Title = "Enable Auto Perfect",
         Callback = function(state)
             if state then
                 BlatantV3FixAPI.Start()

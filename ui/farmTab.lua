@@ -102,7 +102,7 @@ legit1:Input({
 })
 
 legit1:Toggle({
-    Title = "Legit V1",",
+    Title = "Legit V1",
     Callback = function(state)
         if state then
             Legit1API.Start()

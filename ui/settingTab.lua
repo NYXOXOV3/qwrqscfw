@@ -48,7 +48,7 @@ security:Toggle({
         SecurityAPI.ToggleAntiStaff(state)
     end,
 })
-
+security:Divider()
 -- =========================================================
 -- MOVEMENT SECTION
 -- =========================================================
@@ -111,7 +111,7 @@ movement:Button({
         })
     end
 })
-
+movement:Divider()
 -- =========================================================
 -- MODES SECTION
 -- =========================================================
@@ -176,7 +176,7 @@ modes:Toggle({
         ModesAPI.ToggleFreecam(state)
     end,
 })
-
+modes:Divider()
 -- =========================================================
 -- VISUAL SECTION
 -- =========================================================
@@ -235,7 +235,7 @@ visual:Toggle({
         VisualAPI.ToggleESP(v)
     end,
 })
-
+visual:Divider()
 -- =========================================================
 -- EXTERNAL SECTION
 -- =========================================================
@@ -250,3 +250,4 @@ external:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
     end
 })
+external:Divider()

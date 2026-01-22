@@ -47,9 +47,9 @@ if not UltraBlatantV2 then
     warn("[FarmTab] UltraBlatantV2 API not loaded")
     return
 end
-local UltraBlatantV3 = _G.NYXHUB.Modules["farm/blatant3API.lua"]
-if not UltraBlatantV2 then
-    warn("[FarmTab] UltraBlatantV2 API not loaded")
+local BlatantV3FixAPI = _G.NYXHUB.Modules["farm/blatant3API.lua"]
+if not BlatantV3FixAPI then
+    warn("[FarmTab] BlatantV3FixAPI API not loaded")
     return
 end
 
@@ -299,39 +299,39 @@ blatantv2:Toggle({
     end
 })
 
-local blatantbeta = farm:Section({ Title = "Blatant Beta" })
+local blatantv3 = farm:Section({ Title = "Blatant V3" })
 
-blatantbeta:Input({
-        Title = "Burst Count",
-        Default = tostring(UltraBlatantV3.Settings.BurstCount),
+blatantv3:Input({
+        Title = "Fishing Delay",
+        Default = "0.05",
         Callback = function(v)
-            UltraBlatantV3.UpdateSettings(tonumber(v), nil, nil, nil, nil)
+            BlatantV3FixAPI.UpdateSettings(tonumber(v), nil, nil, nil, nil)
         end
     })
 
-    blatantbeta:Input({
-        Title = "Cast Gap",
-        Default = tostring(UltraBlatantV3.Settings.CastGap),
+    blatantv3:Input({
+        Title = "Cancel Delay",
+        Default = "0.01",
         Callback = function(v)
-            UltraBlatantV3.UpdateSettings(nil, tonumber(v), nil, nil, nil)
+            BlatantV3FixAPI.UpdateSettings(nil, tonumber(v), nil, nil, nil)
         end
     })
 
-    blatantbeta:Input({
-        Title = "Burst Delay",
-        Default = tostring(UltraBlatantV3.Settings.BurstDelay),
+    blatantv3:Input({
+        Title = "Timeout Delay",
+        Default = "0.8",
         Callback = function(v)
-            UltraBlatantV3.UpdateSettings(nil, nil, nil, nil, tonumber(v))
+            BlatantV3FixAPI.UpdateSettings(nil, nil, nil, nil, tonumber(v))
         end
     })
 
-    blatantbeta:Toggle({
-        Title = "Ultra Blatant V3 (Burst 8x)",
+    blatantv3:Toggle({
+        Title = "Enable Blatant V3 Fix",
         Callback = function(state)
             if state then
-                UltraBlatantV3.Start()
+                BlatantV3FixAPI.Start()
             else
-                UltraBlatantV3.Stop()
+                BlatantV3FixAPI.Stop()
             end
         end
     })

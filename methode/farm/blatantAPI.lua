@@ -1,5 +1,6 @@
 -- =========================================================
--- AUTO FISHING BLATANT FUNCTION
+-- AUTO FISHING BLATANT FUNCTION (RAW BEHAVIOR)
+-- SAME AS ORIGINAL SCRIPT, API STYLE
 -- =========================================================
 
 local BlatantAPI = {}
@@ -7,12 +8,14 @@ local BlatantAPI = {}
 -- ================= SERVICES =================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- ================= CONTROLLER =================
+local FC = require(
+    ReplicatedStorage:WaitForChild("Controllers").FishingController
+)
+
 -- ================= REMOTES =================
 local Net = ReplicatedStorage
-    :WaitForChild("Packages")
-    :WaitForChild("_Index")
-    :WaitForChild("sleitnick_net@0.2.0")
-    :WaitForChild("net")
+    .Packages._Index["sleitnick_net@0.2.0"].net
 
 local RF_Charge   = Net["RF/ChargeFishingRod"]
 local RF_Start    = Net["RF/RequestFishingMinigameStarted"]
@@ -21,30 +24,41 @@ local RE_Equip    = Net["RE/EquipToolFromHotbar"]
 local RF_Cancel   = Net["RF/CancelFishingInputs"]
 local RF_Update   = Net["RF/UpdateAutoFishingState"]
 
+-- ================= BACKUP ORIGINAL =================
+local originalClick  = FC.RequestFishingMinigameClick
+local originalCharge = FC.RequestChargeFishingRod
+
 -- ================= CONFIG =================
 BlatantAPI.Config = {
     Active = false,
-    Mode = "Old",
-    CancelDelay = 1.75,
-    CompleteDelay = 1.33,
+    CancelDelay   = 0.32,
+    CompleteDelay = 0.18,
 }
 
 local mainThread
 local equipThread
-local FC -- ⚠️ LAZY LOAD
+local updateThread
 
 -- ================= CORE =================
 function BlatantAPI.Start()
     if BlatantAPI.Config.Active then return end
     BlatantAPI.Config.Active = true
 
-    -- ✅ REQUIRE CONTROLLER DI SINI (AMAN)
-    if not FC then
-        FC = require(
-            ReplicatedStorage:WaitForChild("Controllers"):WaitForChild("FishingController")
-        )
-    end
+    -- 🔥 HARD BYPASS CLIENT FLOW (RAW)
+    FC.RequestFishingMinigameClick = function() end
+    FC.RequestChargeFishingRod = function() end
 
+    -- 🔁 FORCE SERVER AUTO FISH MODE
+    updateThread = task.spawn(function()
+        while BlatantAPI.Config.Active do
+            pcall(function()
+                RF_Update:InvokeServer(true)
+            end)
+            task.wait(0.4)
+        end
+    end)
+
+    -- 🎣 AUTO EQUIP SPAM
     equipThread = task.spawn(function()
         while BlatantAPI.Config.Active do
             pcall(RE_Equip.FireServer, RE_Equip, 1)
@@ -52,6 +66,7 @@ function BlatantAPI.Start()
         end
     end)
 
+    -- ⚡ MAIN FISH LOOP (RAW SPEED)
     mainThread = task.spawn(function()
         while BlatantAPI.Config.Active do
             pcall(function()
@@ -73,14 +88,21 @@ end
 
 function BlatantAPI.Stop()
     BlatantAPI.Config.Active = false
+
+    -- 🔄 RESTORE ORIGINAL FUNCTIONS
+    FC.RequestFishingMinigameClick = originalClick
+    FC.RequestChargeFishingRod = originalCharge
+
     if mainThread then task.cancel(mainThread) end
     if equipThread then task.cancel(equipThread) end
-    mainThread, equipThread = nil, nil
-    pcall(function() RF_Cancel:InvokeServer() end)
-end
+    if updateThread then task.cancel(updateThread) end
 
-function BlatantAPI.SetMode(v)
-    BlatantAPI.Config.Mode = v
+    mainThread, equipThread, updateThread = nil, nil, nil
+
+    pcall(function()
+        RF_Update:InvokeServer(false)
+        RF_Cancel:InvokeServer()
+    end)
 end
 
 function BlatantAPI.SetDelay(cancel, complete)

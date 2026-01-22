@@ -27,6 +27,12 @@ if not BlatantAPI then
     warn("[NYXHUB][FarmTab] BlatantAPI not loaded.")
     return
 end
+local Legit1API = _G.NYXHUB.Modules["farm/legit1API.lua"]
+if not Legit1API then
+    warn("[NYXHUB][FarmTab] Legit1API not loaded.")
+    return
+end
+
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -69,6 +75,42 @@ legit:Toggle({
     end
 })
 
+local legit1  = farm:Section({ Title = "Legit V1" })
+
+legit1:Input({
+    Title = "Max Wait Time",
+    Placeholder = "1.30",
+    Default = "1.30",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n and n > 0 then
+            Legit1API.SetDelay(n, nil)
+        end
+    end
+})
+
+legit1:Input({
+    Title = "Cancel Delay",
+    Placeholder = "0.19",
+    Default = "0.19",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n and n > 0 then
+            Legit1API.SetDelay(nil, n)
+        end
+    end
+})
+
+legit1:Toggle({
+    Title = "Legit V1",",
+    Callback = function(state)
+        if state then
+            Legit1API.Start()
+        else
+            Legit1API.Stop()
+        end
+    end
+})
 
 
 local blatant = farm:Section({ Title = "Blatant Stabil" })
@@ -97,3 +139,5 @@ blatant:Input({
         BlatantAPI.SetDelay(nil, tonumber(v))
     end
 })
+
+

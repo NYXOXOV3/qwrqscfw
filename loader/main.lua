@@ -94,6 +94,7 @@ local METHOD_LIST = {
     "farm/blatant6API.lua",
     "farm/fastperfectAPI.lua",
     "farm/areapositionAPI.lua",
+    "farm/skinAnimationAPI.lua",
 
     "automatic/autosellAPI.lua",
     "automatic/autofavoritAPI.lua",

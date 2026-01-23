@@ -1,15 +1,10 @@
 -- =========================================================
--- AREA POSITION API (RAW LOGIC WRAPPER)
+-- AREA API (LOGIC ONLY)
 -- =========================================================
 
 local AreaAPI = {}
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- =========================
--- DATA AREA (RAW)
--- =========================
+-- ================= DATA =================
 AreaAPI.FishingAreas = {
     ["Ancient Jungle"] = {Pos = Vector3.new(1482.753784, 4.772020, -335.656494), Look = Vector3.new(0.505, 0, 0.863)},
     ["Ancient Ruin"] = {Pos = Vector3.new(6031.981, -585.924, 4713.157), Look = Vector3.new(0.316, 0, -0.949)},
@@ -22,78 +17,83 @@ AreaAPI.FishingAreas = {
     ["Enchant Room"] = {Pos = Vector3.new(3255.670, -1301.530, 1371.790), Look = Vector3.new(0, 0, -1)},
     ["Esoteric Depths"] = {Pos = Vector3.new(2164.470, 3.220, 1242.390), Look = Vector3.new(0, 0, -1)},
     ["Fisherman Island"] = {Pos = Vector3.new(74.030, 9.530, 2705.230), Look = Vector3.new(0, 0, -1)},
+    ["Hourglass Diamond Lever"] = {Pos = Vector3.new(1484.610, 8.450, -861.010), Look = Vector3.new(0, 0, -1)},
     ["Iron Cavern"] = {Pos = Vector3.new(-8792.546, -588.000, 230.642), Look = Vector3.new(0.718, 0, 0.696)},
     ["Kohana"] = {Pos = Vector3.new(-668.732, 3.000, 681.580), Look = Vector3.new(0.889, 0, 0.458)},
+    ["Kohana Volcano"] = {Pos = Vector3.new(-605.121, 19.516, 160.010), Look = Vector3.new(0.854, 0, 0.520)},
     ["Lost Isle"] = {Pos = Vector3.new(-3804.105, 2.344, -904.653), Look = Vector3.new(-0.901, 0, 0.433)},
+    ["Pirate Cove"] = {Pos = Vector3.new(3428.686, 4.193, 3432.854), Look = Vector3.new(0.2789, -0.3725, 0.8851)},
+    ["Pirate Treasure Room"] = {Pos = Vector3.new(3301.503, -305.071, 3039.451), Look = Vector3.new(0.7264, -0.6726, 0.1413)},
+    ["Sacred Temple"] = {Pos = Vector3.new(1461.815, -22.125, -670.234), Look = Vector3.new(-0.990, 0, 0.143)},
+    ["Second Enchant Altar"] = {Pos = Vector3.new(1479.587, 128.295, -604.224), Look = Vector3.new(-0.298, 0, -0.955)},
+    ["Sisyphus Statue"] = {Pos = Vector3.new(-3743.745, -135.074, -1007.554), Look = Vector3.new(0.310, 0, 0.951)},
+    ["Treasure Room"] = {Pos = Vector3.new(-3598.440, -281.274, -1645.855), Look = Vector3.new(-0.065, 0, -0.998)},
+    ["Tropical Grove"] = {Pos = Vector3.new(-2162.920, 2.825, 3638.445), Look = Vector3.new(0.381, 0, 0.925)},
+    ["Underground Cellar"] = {Pos = Vector3.new(2118.417, -91.448, -733.800), Look = Vector3.new(0.854, 0, 0.521)},
+    ["Weather Machine"] = {Pos = Vector3.new(-1518.550, 2.875, 1916.148), Look = Vector3.new(0.042, 0, 0.999)},
 }
 
-AreaAPI.AreaNames = {}
-for name in pairs(AreaAPI.FishingAreas) do
-    table.insert(AreaAPI.AreaNames, name)
-end
-
--- =========================
--- STATE
--- =========================
-AreaAPI.SelectedArea = nil
+AreaAPI.Selected = nil
 AreaAPI.SavedPosition = nil
-AreaAPI.FreezeActive = false
+AreaAPI.Freeze = false
 
--- =========================
--- HELPERS (RAW)
--- =========================
-local function GetHRP()
-    local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+-- ================= HELPERS =================
+local function getHRP()
+    local plr = game.Players.LocalPlayer
+    local char = plr.Character or plr.CharacterAdded:Wait()
     return char:WaitForChild("HumanoidRootPart")
 end
 
-function AreaAPI.TeleportToLookAt(pos, look)
-    local hrp = GetHRP()
-    hrp.CFrame = CFrame.new(pos, pos + look) * CFrame.new(0, 0.5, 0)
+function AreaAPI.GetSortedNames()
+    local t = {}
+    for k in pairs(AreaAPI.FishingAreas) do
+        table.insert(t, k)
+    end
+    table.sort(t, function(a,b)
+        return a:lower() < b:lower()
+    end)
+    return t
 end
 
--- =========================
--- FREEZE LOGIC (RAW)
--- =========================
-function AreaAPI.ToggleFreeze(state)
-    AreaAPI.FreezeActive = state
-    local hrp = GetHRP()
-    if not hrp then return end
-
-    if not state then
-        hrp.Anchored = false
-        return
+function AreaAPI.Filter(keyword)
+    local res = {}
+    keyword = (keyword or ""):lower()
+    for _, name in ipairs(AreaAPI.GetSortedNames()) do
+        if keyword == "" or name:lower():find(keyword, 1, true) then
+            table.insert(res, name)
+        end
     end
-
-    local area = AreaAPI.FishingAreas[AreaAPI.SelectedArea]
-        or AreaAPI.SavedPosition
-    if not area then return end
-
-    hrp.Anchored = false
-    AreaAPI.TeleportToLookAt(area.Pos, area.Look)
-
-    local start = os.clock()
-    while os.clock() - start < 1.5 and AreaAPI.FreezeActive do
-        hrp.Velocity = Vector3.zero
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.CFrame = CFrame.new(area.Pos, area.Pos + area.Look) * CFrame.new(0, 0.5, 0)
-        RunService.Heartbeat:Wait()
-    end
-
-    if AreaAPI.FreezeActive then
-        hrp.Anchored = true
-    end
+    return res
 end
 
--- =========================
--- SAVE POS
--- =========================
+function AreaAPI.Teleport(name)
+    local data = AreaAPI.FishingAreas[name]
+    if not data then return end
+    local hrp = getHRP()
+    hrp.CFrame = CFrame.new(data.Pos, data.Pos + data.Look) * CFrame.new(0, 0.5, 0)
+end
+
+function AreaAPI.SetFreeze(state)
+    AreaAPI.Freeze = state
+    local hrp = getHRP()
+    hrp.Anchored = state
+end
+
 function AreaAPI.SaveCurrent()
-    local hrp = GetHRP()
+    local hrp = getHRP()
     AreaAPI.SavedPosition = {
         Pos = hrp.Position,
         Look = hrp.CFrame.LookVector
     }
+    AreaAPI.FishingAreas["Custom: Saved"] = AreaAPI.SavedPosition
+end
+
+function AreaAPI.TeleportSaved()
+    if AreaAPI.SavedPosition then
+        local d = AreaAPI.SavedPosition
+        local hrp = getHRP()
+        hrp.CFrame = CFrame.new(d.Pos, d.Pos + d.Look) * CFrame.new(0, 0.5, 0)
+    end
 end
 
 return AreaAPI

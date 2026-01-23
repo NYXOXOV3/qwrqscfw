@@ -1,5 +1,5 @@
 -- =========================================================
--- SKIN ANIMATION API (PERSISTENT MODE)
+-- SKIN ANIMATION API (TRUE PERSISTENT OVERRIDE)
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -8,8 +8,9 @@ local LP = Players.LocalPlayer
 
 local SkinAPI = {}
 
--- ================= SKIN DATA =================
+-- ================= DATA =================
 local SKINS = {
+    -- ⛔ PASTE FULL SKINS LU DI SINI TANPA DIUBAH
     ["1x1x1x1BanHammer"] = {
         ["EquipIdle"] = {
             id = "rbxassetid://81302570422307",
@@ -240,17 +241,15 @@ local ANIM_ID_MAP = {
     ["134965425664034"] = "ReelingIdle",
     ["114959536562596"] = "ReelIntermission",
     ["117319000848286"] = "FishCaught",
-    ["137429009359442"] = "StartRodCharge",
 }
 
 -- ================= STATE =================
 local enabled = false
 local currentSkin = "Eclipse"
 local connections = {}
-local replaced = {}
 local preloaded = {}
 
--- ================= INTERNAL =================
+-- ================= UTILS =================
 local function getHumanoid()
     local c = LP.Character
     return c and c:FindFirstChildOfClass("Humanoid")
@@ -276,9 +275,9 @@ local function clearPreload()
     preloaded = {}
 end
 
-local function preloadSkin()
+-- ================= CORE =================
+local function preload()
     clearPreload()
-
     local hum = getHumanoid()
     if not hum then return end
 
@@ -293,75 +292,64 @@ local function preloadSkin()
         if ok and track then
             track.Priority = cfg.priority
             track.Looped = cfg.looped
-            preloaded[name] = { track = track, cfg = cfg, anim = anim }
+            preloaded[name] = { track = track, cfg = cfg }
         end
     end
 end
 
-local function replaceTrack(track)
+local function forceReplace(originalTrack)
     if not enabled then return end
-    if not track or not track.Animation then return end
-    if replaced[track] then return end
+    if not originalTrack or not originalTrack.Animation then return end
 
-    local t = getAnimType(track.Animation.AnimationId)
-    if not t then return end
+    local animType = getAnimType(originalTrack.Animation.AnimationId)
+    if not animType then return end
 
-    local data = preloaded[t]
+    local data = preloaded[animType]
     if not data then return end
 
-    local wasPlaying = track.IsPlaying
-    local timePos = track.TimePosition
-    local weight = track.WeightCurrent
+    local tPos = originalTrack.TimePosition
+    local weight = originalTrack.WeightCurrent
 
-    if wasPlaying then track:Stop(0) end
+    originalTrack:Stop(0)
     task.wait()
 
-    if wasPlaying then
-        data.track:Play(0, weight, data.cfg.speed)
-        pcall(function()
-            data.track.TimePosition = timePos
-        end)
-    end
-
-    replaced[track] = true
-end
-
-local function monitor()
-    local animator = getAnimator()
-    if not animator then return end
-
-    for _, t in ipairs(animator:GetPlayingAnimationTracks()) do
-        pcall(replaceTrack, t)
-    end
+    data.track:Play(0, weight, data.cfg.speed)
+    pcall(function()
+        data.track.TimePosition = tPos
+    end)
 end
 
 -- ================= PUBLIC =================
 function SkinAPI.Enable()
     if enabled then return end
     enabled = true
-    replaced = {}
 
-    preloadSkin()
+    preload()
 
     local animator = getAnimator()
     if animator then
         table.insert(connections,
             animator.AnimationPlayed:Connect(function(track)
-                task.wait()
-                replaceTrack(track)
+                task.defer(forceReplace, track)
             end)
         )
     end
 
     table.insert(connections,
-        RunService.Heartbeat:Connect(monitor)
+        RunService.Heartbeat:Connect(function()
+            if not enabled then return end
+            local a = getAnimator()
+            if not a then return end
+            for _, t in ipairs(a:GetPlayingAnimationTracks()) do
+                task.defer(forceReplace, t)
+            end
+        end)
     )
 end
 
 function SkinAPI.Disable()
     if not enabled then return end
     enabled = false
-    replaced = {}
 
     clearPreload()
 
@@ -374,9 +362,8 @@ end
 function SkinAPI.SwitchSkin(name)
     if not SKINS[name] then return end
     currentSkin = name
-    replaced = {}
     if enabled then
-        preloadSkin()
+        preload()
     end
 end
 

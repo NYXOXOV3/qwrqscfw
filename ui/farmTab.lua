@@ -302,58 +302,68 @@ blatantv2:Divider()
 local blatantv3 = farm:Section({ Title = "Auto Perfect" })
 
 blatantv3:Input({
-        Title = "Fishing Delay",
-        Default = "0.05",
-        Placeholder = "0.05",
-        Callback = function(v)
-            BlatantV3FixAPI.UpdateSettings(tonumber(v), nil, nil, nil, nil)
+    Title = "Fishing Delay",
+    Default = "0.05",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV3FixAPI.Settings.FishingDelay = n
         end
-    })
+    end
+})
 
-    blatantv3:Input({
-        Title = "Cancel Delay",
-        Default = "0.01",
-        Placeholder = "0.01",
-        Callback = function(v)
-            BlatantV3FixAPI.UpdateSettings(nil, tonumber(v), nil, nil, nil)
+blatantv3:Input({
+    Title = "Cancel Delay",
+    Default = "0.01",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV3FixAPI.Settings.CancelDelay = n
         end
-    })
+    end
+})
 
-    blatantv3:Input({
-        Title = "Hook Wait Time",
-        Default = "0.01",
-        Placeholder = "0.01",
-        Callback = function(v)
-            BlatantV3FixAPI.UpdateSettings(nil, nil, tonumber(v), nil, nil)
+blatantv3:Input({
+    Title = "Hook Wait Time",
+    Default = "0.01",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV3FixAPI.Settings.HookWaitTime = n
         end
-    })
+    end
+})
 
-    blatantv3:Input({
-        Title = "Cast Delay",
-        Default = "0.25",
-        Placeholder = "0.25",
-        Callback = function(v)
-            BlatantV3FixAPI.UpdateSettings(nil, nil, nil, tonumber(v), nil)
+blatantv3:Input({
+    Title = "Cast Delay",
+    Default = "0.25",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV3FixAPI.Settings.CastDelay = n
         end
-    })
+    end
+})
 
-    blatantv3:Input({
-        Title = "Timeout Delay",
-        Default = "0.8",
-        Placeholder = "0.8",
-        Callback = function(v)
-            BlatantV3FixAPI.UpdateSettings(nil, nil, nil, nil, tonumber(v))
+blatantv3:Input({
+    Title = "Timeout Delay",
+    Default = "0.8",
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV3FixAPI.Settings.TimeoutDelay = n
         end
-    })
+    end
+})
 
-    blatantv3:Toggle({
-        Title = "Enable Auto Perfect",
-        Callback = function(state)
-            if state then
-                BlatantV3FixAPI.Start()
-            else
-                BlatantV3FixAPI.Stop()
-            end
+blatantv3:Toggle({
+    Title = "Enable Auto Perfect",
+    Callback = function(state)
+        if state then
+            BlatantV3FixAPI.Start()
+        else
+            BlatantV3FixAPI.Stop()
         end
-    })
-blatantv3:Divider()
+    end
+})
+

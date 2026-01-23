@@ -214,7 +214,7 @@ local blatantbt = farm:Section({ Title = "Blatant Beta" })
 -- ===============================
 -- COMPLETE DELAY INPUT
 -- ===============================
-blatantV1:Input({
+blatantbt:Input({
     Title = "Complete Delay",
     Placeholder = "0.001",
     Default = tostring(UltraBlatantAPI.Settings.CompleteDelay),
@@ -229,7 +229,7 @@ blatantV1:Input({
 -- ===============================
 -- CANCEL DELAY INPUT
 -- ===============================
-blatantV1:Input({
+blatantbt:Input({
     Title = "Cancel Delay",
     Placeholder = "0.001",
     Default = tostring(UltraBlatantAPI.Settings.CancelDelay),
@@ -241,12 +241,12 @@ blatantV1:Input({
     end
 })
 
-blatantV1:Divider()
+blatantbt:Divider()
 
 -- ===============================
 -- TOGGLE
 -- ===============================
-blatantV1:Toggle({
+blatantbt:Toggle({
     Title = "Enable Ultra Blatant Fishing",
     Value = false,
     Callback = function(state)

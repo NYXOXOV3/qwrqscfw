@@ -373,58 +373,64 @@ blatantv3:Toggle({
 })
 blatantv3:Divider()
 local areafish = farm:Section({ Title = "Farm Area" })
+local dropdown
 
-areafish:Dropdown({
-    Title = "Choose Area",
-    Values = AreaAPI.AreaNames,
-    AllowNone = true,
-    Callback = function(v)
-        AreaAPI.SelectedArea = v
-    end
-})
-
-areafish:Toggle({
-    Title = "Teleport & Freeze Area",
-    Callback = function(state)
-        AreaAPI.ToggleFreeze(state)
-        WindUI:Notify({
-            Title = state and "Area Locked" or "Unfrozen",
-            Duration = 2,
-            Icon = state and "lock" or "unlock"
-        })
-    end
-})
-
-areafish:Button({
-    Title = "Teleport to Area",
-    Callback = function()
-        local area = AreaAPI.FishingAreas[AreaAPI.SelectedArea]
-        if area then
-            AreaAPI.TeleportToLookAt(area.Pos, area.Look)
+-- SEARCH
+areafish:Input({
+    Title = "Search Area",
+    Placeholder = "type name...",
+    Callback = function(text)
+        if dropdown then
+            dropdown:SetValues(AreaAPI.Filter(text))
         end
     end
 })
 
+-- DROPDOWN
+dropdown = areafish:Dropdown({
+    Title = "Choose Area",
+    Values = AreaAPI.GetSortedNames(),
+    AllowNone = true,
+    Callback = function(v)
+        AreaAPI.Selected = v
+    end
+})
+
+-- TELEPORT
+areafish:Button({
+    Title = "Teleport to Area",
+    Callback = function()
+        if AreaAPI.Selected then
+            AreaAPI.Teleport(AreaAPI.Selected)
+        end
+    end
+})
+
+-- FREEZE
+areafish:Toggle({
+    Title = "Teleport & Freeze",
+    Callback = function(v)
+        if AreaAPI.Selected then
+            AreaAPI.Teleport(AreaAPI.Selected)
+            task.wait(1.5)
+            AreaAPI.SetFreeze(v)
+        end
+    end
+})
+
+-- SAVE
 areafish:Button({
     Title = "Save Current Position",
     Callback = function()
         AreaAPI.SaveCurrent()
-        WindUI:Notify({
-            Title = "Position Saved",
-            Duration = 2,
-            Icon = "save"
-        })
+        dropdown:SetValues(AreaAPI.GetSortedNames())
     end
 })
 
+-- TELEPORT SAVED
 areafish:Button({
     Title = "Teleport to Saved Pos",
     Callback = function()
-        if AreaAPI.SavedPosition then
-            AreaAPI.TeleportToLookAt(
-                AreaAPI.SavedPosition.Pos,
-                AreaAPI.SavedPosition.Look
-            )
-        end
+        AreaAPI.TeleportSaved()
     end
 })

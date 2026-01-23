@@ -373,18 +373,6 @@ blatantv3:Toggle({
 })
 blatantv3:Divider()
 local areafish = farm:Section({ Title = "Farm Area" })
-local dropdown
-
--- SEARCH
-areafish:Input({
-    Title = "Search Area",
-    Placeholder = "type name...",
-    Callback = function(text)
-        if dropdown then
-            dropdown:SetValues(AreaAPI.Filter(text))
-        end
-    end
-})
 
 -- DROPDOWN
 dropdown = areafish:Dropdown({

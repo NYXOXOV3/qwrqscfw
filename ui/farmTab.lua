@@ -52,6 +52,11 @@ if not BlatantV3FixAPI then
     warn("[FarmTab] BlatantV3FixAPI API not loaded")
     return
 end
+local AreaAPI = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
+if not AreaAPI then
+    warn("[FarmTab] AreaPositionAPI not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -366,4 +371,60 @@ blatantv3:Toggle({
         end
     end
 })
+blatantv3:Divider()
+local areafish = farm:Section({ Title = "Farm Area" })
 
+areafish:Dropdown({
+    Title = "Choose Area",
+    Values = AreaAPI.AreaNames,
+    AllowNone = true,
+    Callback = function(v)
+        AreaAPI.SelectedArea = v
+    end
+})
+
+areafish:Toggle({
+    Title = "Teleport & Freeze Area",
+    Callback = function(state)
+        AreaAPI.ToggleFreeze(state)
+        WindUI:Notify({
+            Title = state and "Area Locked" or "Unfrozen",
+            Duration = 2,
+            Icon = state and "lock" or "unlock"
+        })
+    end
+})
+
+areafish:Button({
+    Title = "Teleport to Area",
+    Callback = function()
+        local area = AreaAPI.FishingAreas[AreaAPI.SelectedArea]
+        if area then
+            AreaAPI.TeleportToLookAt(area.Pos, area.Look)
+        end
+    end
+})
+
+areafish:Button({
+    Title = "Save Current Position",
+    Callback = function()
+        AreaAPI.SaveCurrent()
+        WindUI:Notify({
+            Title = "Position Saved",
+            Duration = 2,
+            Icon = "save"
+        })
+    end
+})
+
+areafish:Button({
+    Title = "Teleport to Saved Pos",
+    Callback = function()
+        if AreaAPI.SavedPosition then
+            AreaAPI.TeleportToLookAt(
+                AreaAPI.SavedPosition.Pos,
+                AreaAPI.SavedPosition.Look
+            )
+        end
+    end
+})

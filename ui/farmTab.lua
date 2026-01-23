@@ -57,6 +57,11 @@ if not AreaAPI then
     warn("[FarmTab] AreaPositionAPI not loaded")
     return
 end
+local SkinAPI = _G.NYXHUB.Modules["farm/skinAnimationAPI.lua"]
+if not SkinAPI then
+    warn("[FarmTab] SkinAnimationAPI not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -420,5 +425,30 @@ areafish:Button({
     Title = "Teleport to Saved Pos",
     Callback = function()
         AreaAPI.TeleportSaved()
+    end
+})
+areafish:Divider()
+local skinSection = farm:Section({ Title = "Skin Animation" })
+
+-- DROPDOWN
+skinDropdown = skinSection:Dropdown({
+    Title = "Select Skin",
+    Values = SkinAPI.GetSkins(),
+    Value = SkinAPI.GetCurrentSkin(),
+    Callback = function(v)
+        SkinAPI.SwitchSkin(v)
+    end
+})
+
+-- TOGGLE
+skinSection:Toggle({
+    Title = "Enable Skin Animation",
+    Value = SkinAPI.IsEnabled(),
+    Callback = function(state)
+        if state then
+            SkinAPI.Enable()
+        else
+            SkinAPI.Disable()
+        end
     end
 })

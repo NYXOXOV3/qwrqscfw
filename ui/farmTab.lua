@@ -428,25 +428,32 @@ areafish:Button({
     end
 })
 areafish:Divider()
-local skinSection = farm:Section({ Title = "Skin Animation" })
+local skinSec = farm:Section({ Title = "Skin Animation" })
 
-skinSection:Dropdown({
+local skins = SkinAPI.GetSkins()
+local current = skins[1]
+
+skinSec:Dropdown({
     Title = "Select Skin",
-    Values = SkinAPI.GetSkins(),
-    Value = SkinAPI.GetCurrentSkin(),
+    Values = skins,
+    Value = current,
     Callback = function(v)
+        current = v
         SkinAPI.SwitchSkin(v)
     end
 })
 
-skinSection:Toggle({
+skinSec:Toggle({
     Title = "Enable Skin Animation",
-    Value = SkinAPI.IsEnabled(),
-    Callback = function(state)
-        if state then
+    Value = false,
+    Callback = function(on)
+        if on then
+            SkinAPI.SwitchSkin(current)
             SkinAPI.Enable()
+            WindUI:Notify({Title="Skin ON", Duration=2, Icon="check"})
         else
             SkinAPI.Disable()
+            WindUI:Notify({Title="Skin OFF", Duration=2, Icon="x"})
         end
     end
 })

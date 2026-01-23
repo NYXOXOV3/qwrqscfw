@@ -430,8 +430,7 @@ areafish:Button({
 areafish:Divider()
 local skinSection = farm:Section({ Title = "Skin Animation" })
 
--- DROPDOWN
-skinDropdown = skinSection:Dropdown({
+skinSection:Dropdown({
     Title = "Select Skin",
     Values = SkinAPI.GetSkins(),
     Value = SkinAPI.GetCurrentSkin(),
@@ -440,7 +439,6 @@ skinDropdown = skinSection:Dropdown({
     end
 })
 
--- TOGGLE
 skinSection:Toggle({
     Title = "Enable Skin Animation",
     Value = SkinAPI.IsEnabled(),

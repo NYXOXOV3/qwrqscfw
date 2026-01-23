@@ -62,6 +62,11 @@ if not SkinAPI then
     warn("[FarmTab] SkinAnimationAPI not loaded")
     return
 end
+local UltraBlatantAPI = _G.NYXHUB.Modules["farm/blatantv1.lua"]
+if not UltraBlatantAPI then
+    warn("[FarmTab] UltraBlatantAPI not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -203,6 +208,91 @@ blatant:Input({
     end
 })
 blatant:Divider()
+
+local blatantbt = farm:Section({ Title = "Blatant Beta" })
+
+-- ===============================
+-- COMPLETE DELAY INPUT
+-- ===============================
+blatantV1:Input({
+    Title = "Complete Delay",
+    Placeholder = "0.001",
+    Default = tostring(UltraBlatantAPI.Settings.CompleteDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n and n >= 0 then
+            UltraBlatantAPI.UpdateSettings(n, nil)
+        end
+    end
+})
+
+-- ===============================
+-- CANCEL DELAY INPUT
+-- ===============================
+blatantV1:Input({
+    Title = "Cancel Delay",
+    Placeholder = "0.001",
+    Default = tostring(UltraBlatantAPI.Settings.CancelDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n and n >= 0 then
+            UltraBlatantAPI.UpdateSettings(nil, n)
+        end
+    end
+})
+
+blatantV1:Divider()
+
+-- ===============================
+-- TOGGLE
+-- ===============================
+blatantV1:Toggle({
+    Title = "Enable Ultra Blatant Fishing",
+    Value = false,
+    Callback = function(state)
+
+        -- 🛑 MATIKAN MODE LAIN (ANTI TABRAKAN)
+        if _G.NYXHUB.Modules["farm/autoclickAPI.lua"] then
+            _G.NYXHUB.Modules["farm/autoclickAPI.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/legitAPI.lua"] then
+            _G.NYXHUB.Modules["farm/legitAPI.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/legit1API.lua"] then
+            _G.NYXHUB.Modules["farm/legit1API.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/legit2API.lua"] then
+            _G.NYXHUB.Modules["farm/legit2API.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/blatantAPI.lua"] then
+            _G.NYXHUB.Modules["farm/blatantAPI.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/blatant2API.lua"] then
+            _G.NYXHUB.Modules["farm/blatant2API.lua"].Stop()
+        end
+        if _G.NYXHUB.Modules["farm/blatant3API.lua"] then
+            _G.NYXHUB.Modules["farm/blatant3API.lua"].Stop()
+        end
+
+        -- ▶️ ULTRA BLATANT CONTROL
+        if state then
+            UltraBlatantAPI.Start()
+            _G.NYXHUB.WindUI:Notify({
+                Title = "Ultra Blatant ON",
+                Duration = 2,
+                Icon = "zap"
+            })
+        else
+            UltraBlatantAPI.Stop()
+            _G.NYXHUB.WindUI:Notify({
+                Title = "Ultra Blatant OFF",
+                Duration = 2,
+                Icon = "x"
+            })
+        end
+    end
+})
+
 local blatantv1 = farm:Section({ Title = "Blatant V1" })
 
 blatantv1:Input({

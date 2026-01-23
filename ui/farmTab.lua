@@ -319,7 +319,7 @@ blatantv3:Input({
         end
     })
 
-    blatantv3::Input({
+    blatantv3:Input({
         Title = "Hook Wait Time",
         Default = "0.01",
         Placeholder = "0.01",

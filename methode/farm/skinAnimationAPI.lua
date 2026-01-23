@@ -1,5 +1,5 @@
 -- =========================================================
--- SKIN ANIMATION API (LOGIC ONLY)
+-- SKIN ANIMATION API (PERSISTENT MODE)
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -244,33 +244,43 @@ local ANIM_ID_MAP = {
 }
 
 -- ================= STATE =================
-local currentSkin = "Eclipse"
 local enabled = false
+local currentSkin = "Eclipse"
 local connections = {}
-local replacedTracks = {}
-local preloadedAnimations = {}
+local replaced = {}
+local preloaded = {}
 
 -- ================= INTERNAL =================
 local function getHumanoid()
-    local char = LP.Character
-    return char and char:FindFirstChildOfClass("Humanoid")
+    local c = LP.Character
+    return c and c:FindFirstChildOfClass("Humanoid")
 end
 
 local function getAnimator()
-    local hum = getHumanoid()
-    return hum and hum:FindFirstChildOfClass("Animator")
+    local h = getHumanoid()
+    return h and h:FindFirstChildOfClass("Animator")
 end
 
-local function getAnimType(animId)
-    local num = animId:match("(%d+)")
-    return num and ANIM_ID_MAP[num]
+local function getAnimType(id)
+    local n = id:match("(%d+)")
+    return n and ANIM_ID_MAP[n]
 end
 
-local function preload()
+local function clearPreload()
+    for _, d in pairs(preloaded) do
+        pcall(function()
+            d.track:Stop()
+            d.anim:Destroy()
+        end)
+    end
+    preloaded = {}
+end
+
+local function preloadSkin()
+    clearPreload()
+
     local hum = getHumanoid()
     if not hum then return end
-
-    preloadedAnimations = {}
 
     for name, cfg in pairs(SKINS[currentSkin]) do
         local anim = Instance.new("Animation")
@@ -283,18 +293,20 @@ local function preload()
         if ok and track then
             track.Priority = cfg.priority
             track.Looped = cfg.looped
-            preloadedAnimations[name] = {track = track, cfg = cfg, anim = anim}
+            preloaded[name] = { track = track, cfg = cfg, anim = anim }
         end
     end
 end
 
 local function replaceTrack(track)
+    if not enabled then return end
     if not track or not track.Animation then return end
-    local animType = getAnimType(track.Animation.AnimationId)
-    if not animType then return end
-    if replacedTracks[track] then return end
+    if replaced[track] then return end
 
-    local data = preloadedAnimations[animType]
+    local t = getAnimType(track.Animation.AnimationId)
+    if not t then return end
+
+    local data = preloaded[t]
     if not data then return end
 
     local wasPlaying = track.IsPlaying
@@ -311,56 +323,47 @@ local function replaceTrack(track)
         end)
     end
 
-    replacedTracks[track] = true
+    replaced[track] = true
 end
 
 local function monitor()
     local animator = getAnimator()
     if not animator then return end
+
     for _, t in ipairs(animator:GetPlayingAnimationTracks()) do
         pcall(replaceTrack, t)
     end
 end
 
--- ================= PUBLIC API =================
+-- ================= PUBLIC =================
 function SkinAPI.Enable()
     if enabled then return end
     enabled = true
-    replacedTracks = {}
-    preload()
+    replaced = {}
+
+    preloadSkin()
 
     local animator = getAnimator()
     if animator then
         table.insert(connections,
             animator.AnimationPlayed:Connect(function(track)
-                if enabled then
-                    task.wait()
-                    replaceTrack(track)
-                end
+                task.wait()
+                replaceTrack(track)
             end)
         )
     end
 
     table.insert(connections,
-        RunService.Heartbeat:Connect(function()
-            if enabled then monitor() end
-        end)
+        RunService.Heartbeat:Connect(monitor)
     )
 end
 
 function SkinAPI.Disable()
     if not enabled then return end
     enabled = false
-    replacedTracks = {}
+    replaced = {}
 
-    for _, data in pairs(preloadedAnimations) do
-        pcall(function()
-            data.track:Stop()
-            data.anim:Destroy()
-        end)
-    end
-
-    preloadedAnimations = {}
+    clearPreload()
 
     for _, c in ipairs(connections) do
         c:Disconnect()
@@ -371,15 +374,15 @@ end
 function SkinAPI.SwitchSkin(name)
     if not SKINS[name] then return end
     currentSkin = name
-    replacedTracks = {}
-    preload()
+    replaced = {}
+    if enabled then
+        preloadSkin()
+    end
 end
 
 function SkinAPI.GetSkins()
     local t = {}
-    for k in pairs(SKINS) do
-        table.insert(t, k)
-    end
+    for k in pairs(SKINS) do table.insert(t, k) end
     table.sort(t)
     return t
 end

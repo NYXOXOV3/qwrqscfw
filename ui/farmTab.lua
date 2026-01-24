@@ -62,9 +62,9 @@ if not SkinAPI then
     warn("[FarmTab] SkinAnimationAPI not loaded")
     return
 end
-local UltraBlatantAPI = _G.NYXHUB.Modules["farm/blatantv1.lua"]
-if not UltraBlatantAPI then
-    warn("[FarmTab] UltraBlatantAPI not loaded")
+local UltraBlatantAPI1 = _G.NYXHUB.Modules["farm/blatantv1.lua"]
+if not UltraBlatantAPI1 then
+    warn("[FarmTab] UltraBlatantAPI1 not loaded")
     return
 end
 
@@ -217,11 +217,11 @@ local blatantbt = farm:Section({ Title = "Blatant Beta" })
 blatantbt:Input({
     Title = "Complete Delay",
     Placeholder = "0.001",
-    Default = tostring(UltraBlatantAPI.Settings.CompleteDelay),
+    Default = tostring(UltraBlatantAPI1.Settings.CompleteDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n and n >= 0 then
-            UltraBlatantAPI.UpdateSettings(n, nil)
+            UltraBlatantAPI1.UpdateSettings(n, nil)
         end
     end
 })
@@ -232,16 +232,14 @@ blatantbt:Input({
 blatantbt:Input({
     Title = "Cancel Delay",
     Placeholder = "0.001",
-    Default = tostring(UltraBlatantAPI.Settings.CancelDelay),
+    Default = tostring(UltraBlatantAPI1.Settings.CancelDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n and n >= 0 then
-            UltraBlatantAPI.UpdateSettings(nil, n)
+            UltraBlatantAPI1.UpdateSettings(nil, n)
         end
     end
 })
-
-blatantbt:Divider()
 
 -- ===============================
 -- TOGGLE
@@ -276,14 +274,14 @@ blatantbt:Toggle({
 
         -- ▶️ ULTRA BLATANT CONTROL
         if state then
-            UltraBlatantAPI.Start()
+            UltraBlatantAPI1.Start()
             _G.NYXHUB.WindUI:Notify({
                 Title = "Ultra Blatant ON",
                 Duration = 2,
                 Icon = "zap"
             })
         else
-            UltraBlatantAPI.Stop()
+            UltraBlatantAPI1.Stop()
             _G.NYXHUB.WindUI:Notify({
                 Title = "Ultra Blatant OFF",
                 Duration = 2,
@@ -292,7 +290,7 @@ blatantbt:Toggle({
         end
     end
 })
-
+blatantbt:Divider()
 local blatantv1 = farm:Section({ Title = "Blatant V1" })
 
 blatantv1:Input({

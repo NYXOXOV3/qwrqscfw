@@ -1,5 +1,4 @@
--- ⚠️ ULTRA BLATANT AUTO FISHING - GUI COMPATIBLE MODULE
--- DESIGNED TO WORK WITH EXTERNAL GUI SYSTEM
+-- ⚠️ BLATANT V2 AUTO FISHING - CLEAN VERSION
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
@@ -13,26 +12,23 @@ local netFolder = ReplicatedStorage
 local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
 local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
 local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
-local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")  -- ⭐ ADDED untuk stop function
+local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
 local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
 local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
 
 -- Module table
-local UltraBlatant1 = {}
-UltraBlatant1.Active = false
-UltraBlatant1.Stats = {
-    castCount = 0,
-    startTime = 0
-}
+local BlatantBeta = {}
+BlatantBeta.Active = false
 
--- Settings (sesuai dengan pattern GUI kamu)
-UltraBlatant1.Settings = {
-    CompleteDelay = 0.001,    -- Delay sebelum complete
-    CancelDelay = 0.001       -- Delay setelah complete sebelum cancel
+-- Settings
+BlatantBeta.Settings = {
+    ChargeDelay = 0.007,
+    CompleteDelay = 0.001,
+    CancelDelay = 0.001
 }
 
 ----------------------------------------------------------------
--- CORE FUNCTIONS
+-- CORE FISHING FUNCTIONS
 ----------------------------------------------------------------
 
 local function safeFire(func)
@@ -41,48 +37,45 @@ local function safeFire(func)
     end)
 end
 
--- MAIN SPAM LOOP
 local function ultraSpamLoop()
-    while UltraBlatant1.Active do
-        local currentTime = tick()
+    while BlatantBeta.Active do
+        local startTime = tick()
         
-        -- 1x CHARGE & REQUEST (CASTING)
         safeFire(function()
-            RF_ChargeFishingRod:InvokeServer({[1] = currentTime})
-        end)
-        safeFire(function()
-            RF_RequestMinigame:InvokeServer(1, 0, currentTime)
+            RF_ChargeFishingRod:InvokeServer({[1] = startTime})
         end)
         
-        UltraBlatant1.Stats.castCount = UltraBlatant1.Stats.castCount + 1
+        task.wait(BlatantBeta.Settings.ChargeDelay)
         
-        -- Wait CompleteDelay then fire complete once
-        task.wait(UltraBlatant1.Settings.CompleteDelay)
+        local releaseTime = tick()
+        safeFire(function()
+            RF_RequestMinigame:InvokeServer(1, 0, releaseTime)
+        end)
+        
+        task.wait(BlatantBeta.Settings.CompleteDelay)
         
         safeFire(function()
             RE_FishingCompleted:FireServer()
         end)
         
-        -- Cancel with CancelDelay
-        task.wait(UltraBlatant1.Settings.CancelDelay)
+        task.wait(BlatantBeta.Settings.CancelDelay)
         safeFire(function()
             RF_CancelFishingInputs:InvokeServer()
         end)
     end
 end
 
--- BACKUP LISTENER
 RE_MinigameChanged.OnClientEvent:Connect(function(state)
-    if not UltraBlatant1.Active then return end
+    if not BlatantBeta.Active then return end
     
     task.spawn(function()
-        task.wait(UltraBlatant1.Settings.CompleteDelay)
+        task.wait(BlatantBeta.Settings.CompleteDelay)
         
         safeFire(function()
             RE_FishingCompleted:FireServer()
         end)
         
-        task.wait(UltraBlatant1.Settings.CancelDelay)
+        task.wait(BlatantBeta.Settings.CancelDelay)
         safeFire(function()
             RF_CancelFishingInputs:InvokeServer()
         end)
@@ -90,59 +83,47 @@ RE_MinigameChanged.OnClientEvent:Connect(function(state)
 end)
 
 ----------------------------------------------------------------
--- PUBLIC API (Compatible dengan pattern GUI kamu)
+-- PUBLIC API
 ----------------------------------------------------------------
 
--- ⭐ NEW: Update Settings function
-function UltraBlatant1.UpdateSettings(completeDelay, cancelDelay)
+-- Update Settings function
+function BlatantBeta.UpdateSettings(completeDelay, cancelDelay)
     if completeDelay ~= nil then
-        UltraBlatant1.Settings.CompleteDelay = completeDelay
-        print("✅ UltraBlatant1 CompleteDelay updated:", completeDelay)
+        BlatantBeta.Settings.CompleteDelay = completeDelay
     end
     
     if cancelDelay ~= nil then
-        UltraBlatant1.Settings.CancelDelay = cancelDelay
-        print("✅ UltraBlatant1 CancelDelay updated:", cancelDelay)
+        BlatantBeta.Settings.CancelDelay = cancelDelay
     end
 end
 
 -- Start function
-function UltraBlatant1.Start()
-    if UltraBlatant1.Active then 
-        print("⚠️ Ultra Blatant already running!")
+function BlatantBeta.Start()
+    if BlatantBeta.Active then 
         return
     end
     
-    UltraBlatant1.Active = true
-    UltraBlatant1.Stats.castCount = 0
-    UltraBlatant1.Stats.startTime = tick()
-    
+    BlatantBeta.Active = true
     task.spawn(ultraSpamLoop)
 end
 
--- ⭐ ENHANCED Stop function - Nyalakan auto fishing game
-function UltraBlatant1.Stop()
-    if not UltraBlatant1.Active then 
+-- Stop function
+function BlatantBeta.Stop()
+    if not BlatantBeta.Active then 
         return
     end
     
-    UltraBlatant1.Active = false
+    BlatantBeta.Active = false
     
-    -- ⭐ Nyalakan auto fishing game (biarkan tetap nyala)
     safeFire(function()
         RF_UpdateAutoFishingState:InvokeServer(true)
     end)
     
-    -- Wait sebentar untuk game process
     task.wait(0.2)
     
-    -- Cancel fishing inputs untuk memastikan karakter berhenti
     safeFire(function()
         RF_CancelFishingInputs:InvokeServer()
     end)
-    
-    print("✅ Ultra Blatant stopped - Game auto fishing enabled, can change rod/skin")
 end
 
--- Return module
-return UltraBlatant1
+return BlatantBeta

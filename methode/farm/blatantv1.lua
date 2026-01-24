@@ -22,7 +22,7 @@ BlatantBeta.Active = false
 
 -- Settings
 BlatantBeta.Settings = {
-    ChargeDelay = 0.007,
+    ChargeDelay = 0.001,
     CompleteDelay = 0.001,
     CancelDelay = 0.001
 }

@@ -62,9 +62,9 @@ if not SkinAPI then
     warn("[FarmTab] SkinAnimationAPI not loaded")
     return
 end
-local UltraBlatantAPI1 = _G.NYXHUB.Modules["farm/blatantv1.lua"]
-if not UltraBlatantAPI1 then
-    warn("[FarmTab] UltraBlatantAPI1 not loaded")
+local BlatantBeta = _G.NYXHUB.Modules["farm/blatantv1.lua"]
+if not BlatantBeta then
+    warn("[FarmTab] BlatantBeta not loaded")
     return
 end
 
@@ -217,11 +217,11 @@ local blatantbt = farm:Section({ Title = "Blatant Beta" })
 blatantbt:Input({
     Title = "Complete Delay",
     Placeholder = "0.001",
-    Default = tostring(UltraBlatantAPI1.Settings.CompleteDelay),
+    Default = tostring(BlatantBeta.Settings.CompleteDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n and n >= 0 then
-            UltraBlatantAPI1.UpdateSettings(n, nil)
+            BlatantBeta.UpdateSettings(n, nil)
         end
     end
 })
@@ -232,11 +232,11 @@ blatantbt:Input({
 blatantbt:Input({
     Title = "Cancel Delay",
     Placeholder = "0.001",
-    Default = tostring(UltraBlatantAPI1.Settings.CancelDelay),
+    Default = tostring(BlatantBeta.Settings.CancelDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n and n >= 0 then
-            UltraBlatantAPI1.UpdateSettings(nil, n)
+            BlatantBeta.UpdateSettings(nil, n)
         end
     end
 })
@@ -274,14 +274,14 @@ blatantbt:Toggle({
 
         -- ▶️ ULTRA BLATANT CONTROL
         if state then
-            UltraBlatantAPI1.Start()
+            BlatantBeta.Start()
             _G.NYXHUB.WindUI:Notify({
                 Title = "Ultra Blatant ON",
                 Duration = 2,
                 Icon = "zap"
             })
         else
-            UltraBlatantAPI1.Stop()
+            BlatantBeta.Stop()
             _G.NYXHUB.WindUI:Notify({
                 Title = "Ultra Blatant OFF",
                 Duration = 2,

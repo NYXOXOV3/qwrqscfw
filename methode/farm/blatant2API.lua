@@ -28,8 +28,8 @@ BlatantV2.Settings = {
 
 -- State tracking
 local FishingState = {
-    lastCompleteTime = 0,
-    completeCooldown = 0.4
+    lastCompleteTime = 0.1,
+    completeCooldown = 0.1
 }
 
 ----------------------------------------------------------------

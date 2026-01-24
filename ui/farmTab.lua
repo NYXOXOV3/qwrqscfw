@@ -547,3 +547,43 @@ skinSec:Toggle({
         end
     end
 })
+
+-- =========================================================
+-- STOP ALL FARM BUTTON (PANIC BUTTON)
+-- =========================================================
+
+farm:Button({
+    Title = "🛑 STOP ALL FARMING",
+    Callback = function()
+
+        local mods = _G.NYXHUB.Modules
+
+        -- AUTO / LEGIT
+        if mods["farm/autoclickAPI.lua"] then mods["farm/autoclickAPI.lua"].Stop() end
+        if mods["farm/legitAPI.lua"] then mods["farm/legitAPI.lua"].Stop() end
+        if mods["farm/legit1API.lua"] then mods["farm/legit1API.lua"].Stop() end
+        if mods["farm/legit2API.lua"] then mods["farm/legit2API.lua"].Stop() end
+
+        -- BLATANT
+        if mods["farm/blatantAPI.lua"] then mods["farm/blatantAPI.lua"].Stop() end
+        if mods["farm/blatant1API.lua"] then mods["farm/blatant1API.lua"].Stop() end
+        if mods["farm/blatant2API.lua"] then mods["farm/blatant2API.lua"].Stop() end
+        if mods["farm/blatant3API.lua"] then mods["farm/blatant3API.lua"].Stop() end
+        if mods["farm/blatantv1.lua"] then mods["farm/blatantv1.lua"].Stop() end
+
+        -- AREA / SKIN (opsional tapi aman)
+        if mods["farm/areapositionAPI.lua"] then
+            mods["farm/areapositionAPI.lua"].SetFreeze(false)
+        end
+        if mods["farm/skinAnimationAPI.lua"] then
+            mods["farm/skinAnimationAPI.lua"].Disable()
+        end
+
+        WindUI:Notify({
+            Title = "ALL FARM STOPPED",
+            Description = "Semua mode fishing dimatikan",
+            Duration = 2.5,
+            Icon = "alert-triangle"
+        })
+    end
+})

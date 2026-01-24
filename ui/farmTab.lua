@@ -109,40 +109,10 @@ legit:Toggle({
     end
 })
 legit:Divider()
--- =========================================================
--- LEGIT MODE (FAST / PERFECT)
--- =========================================================
+local legit1  = farm:Section({ Title = "Legit Fast" })
 
-local legitMode = "Fast"
-local legitEnabled = false
-
-local legitCombo = farm:Section({ Title = "Legit Mode" })
-
--- MODE DROPDOWN
-legitCombo:Dropdown({
-    Title = "Legit Type",
-    Values = { "Fast", "Perfect" },
-    Value = "Fast",
-    Callback = function(v)
-        legitMode = v
-
-        -- kalau lagi ON, switch mode langsung
-        if legitEnabled then
-            Legit1API.Stop()
-            PerfectAPI.Stop()
-
-            if v == "Fast" then
-                Legit1API.Start()
-            else
-                PerfectAPI.Start()
-            end
-        end
-    end
-})
-
--- FAST SETTINGS (LEGIT V1)
-legitCombo:Input({
-    Title = "Fast - Max Wait Time",
+legit1:Input({
+    Title = "Max Wait Time",
     Placeholder = "1.30",
     Default = "1.30",
     Callback = function(v)
@@ -153,8 +123,8 @@ legitCombo:Input({
     end
 })
 
-legitCombo:Input({
-    Title = "Fast - Cancel Delay",
+legit1:Input({
+    Title = "Cancel Delay",
     Placeholder = "0.19",
     Default = "0.19",
     Callback = function(v)
@@ -165,53 +135,50 @@ legitCombo:Input({
     end
 })
 
--- PERFECT SETTINGS (LEGIT V2)
-legitCombo:Input({
-    Title = "Perfect - Fishing Delay",
+legit1:Toggle({
+    Title = "Legit V1",
+    Callback = function(state)
+        if state then
+            Legit1API.Start()
+        else
+            Legit1API.Stop()
+        end
+    end
+})
+legit1:Divider()
+local legit2 = farm:Section({ Title  = "Legit Perfect" })
+
+legit2:Input({
+    Title = "Fishing Delay",
     Placeholder = "1.50",
     Default = "1.50",
     Callback = function(v)
         local n = tonumber(v)
-        if n then
-            PerfectAPI.SetDelay(n, nil)
-        end
+        if n then PerfectAPI.SetDelay(n, nil) end
     end
 })
 
-legitCombo:Input({
-    Title = "Perfect - Cancel Delay",
+legit2:Input({
+    Title = "Cancel Delay",
     Placeholder = "0.19",
     Default = "0.19",
     Callback = function(v)
         local n = tonumber(v)
-        if n then
-            PerfectAPI.SetDelay(nil, n)
-        end
+        if n then PerfectAPI.SetDelay(nil, n) end
     end
 })
 
-legitCombo:Divider()
-
--- TOGGLE
-legitCombo:Toggle({
-    Title = "Enable Legit Fishing",
+legit2:Toggle({
+    Title = "Enable Instant Perfect",
     Callback = function(state)
-        legitEnabled = state
-
-        -- stop semua legit dulu
-        Legit1API.Stop()
-        PerfectAPI.Stop()
-
         if state then
-            if legitMode == "Fast" then
-                Legit1API.Start()
-            else
-                PerfectAPI.Start()
-            end
+            PerfectAPI.Start()
+        else
+            PerfectAPI.Stop()
         end
     end
 })
-legitCombo:Divider()
+legit2:Divider()
 local blatant = farm:Section({ Title = "Blatant Stabil" })
 
 blatant:Toggle({

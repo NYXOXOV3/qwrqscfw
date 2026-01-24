@@ -364,17 +364,17 @@ blatantv2:Input({
     end
 })
 
-blatantv2:Input({
-    Title = "ReCast Delay",
-    Placeholder = tostring(BlatantV2.Settings.ReCastDelay),
-    Default = tostring(BlatantV2.Settings.ReCastDelay),
-    Callback = function(v)
-        local n = tonumber(v)
-        if n then
-            BlatantV2.UpdateSettings(nil, nil, n)
-        end
-    end
-})
+--blatantv2:Input({
+--    Title = "ReCast Delay",
+--    Placeholder = tostring(BlatantV2.Settings.ReCastDelay),
+--    Default = tostring(BlatantV2.Settings.ReCastDelay),
+--    Callback = function(v)
+--        local n = tonumber(v)
+--        if n then
+--            BlatantV2.UpdateSettings(nil, nil, n)
+--        end
+--    end
+--})
 
 blatantv2:Toggle({
     Title = "Ultra Blatant V2",

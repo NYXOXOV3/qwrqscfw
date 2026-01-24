@@ -136,7 +136,7 @@ legit1:Input({
 })
 
 legit1:Toggle({
-    Title = "Legit V1",
+    Title = "Legit Fast",
     Callback = function(state)
         if state then
             Legit1API.Start()
@@ -169,7 +169,7 @@ legit2:Input({
 })
 
 legit2:Toggle({
-    Title = "Enable Instant Perfect",
+    Title = "Legit Perfect",
     Callback = function(state)
         if state then
             PerfectAPI.Start()
@@ -402,6 +402,7 @@ local blatantv3 = farm:Section({ Title = "Auto Perfect" })
 blatantv3:Input({
     Title = "Fishing Delay",
     Default = "0.05",
+    Placeholder = tostring(BlatantV3FixAPI.Settings.FishingDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -413,6 +414,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Cancel Delay",
     Default = "0.01",
+    Placeholder = tostring(BlatantV3FixAPI.Settings.CancelDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -424,6 +426,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Hook Wait Time",
     Default = "0.01",
+    Placeholder = tostring(BlatantV3FixAPI.Settings.HookWaitTime),
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -435,6 +438,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Cast Delay",
     Default = "0.25",
+    Placeholder = tostring(BlatantV3FixAPI.Settings.CastDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -446,6 +450,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Timeout Delay",
     Default = "0.8",
+    Placeholder = tostring(BlatantV3FixAPI.Settings.TimeoutDelay),
     Callback = function(v)
         local n = tonumber(v)
         if n then

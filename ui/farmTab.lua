@@ -402,7 +402,7 @@ local blatantv3 = farm:Section({ Title = "Auto Perfect" })
 blatantv3:Input({
     Title = "Fishing Delay",
     Default = "0.05",
-    Placeholder = tostring(BlatantV3FixAPI.Settings.FishingDelay),
+    Placeholder = "0.05",
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -414,7 +414,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Cancel Delay",
     Default = "0.01",
-    Placeholder = tostring(BlatantV3FixAPI.Settings.CancelDelay),
+    Placeholder = "0.01",
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -426,7 +426,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Hook Wait Time",
     Default = "0.01",
-    Placeholder = tostring(BlatantV3FixAPI.Settings.HookWaitTime),
+    Placeholder = "0.01",
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -438,7 +438,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Cast Delay",
     Default = "0.25",
-    Placeholder = tostring(BlatantV3FixAPI.Settings.CastDelay),
+    Placeholder = "0.25",
     Callback = function(v)
         local n = tonumber(v)
         if n then
@@ -450,7 +450,7 @@ blatantv3:Input({
 blatantv3:Input({
     Title = "Timeout Delay",
     Default = "0.8",
-    Placeholder = tostring(BlatantV3FixAPI.Settings.TimeoutDelay),
+    Placeholder = "0.8",
     Callback = function(v)
         local n = tonumber(v)
         if n then

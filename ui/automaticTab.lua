@@ -1,147 +1,81 @@
 -- =========================================================
--- NYXHUB AUTOMATIC TAB
--- AUTO SELL SYSTEM UI
+-- NYXHUB AUTOMATIC TAB (AUTO SELL UI)
 -- =========================================================
 
-if not _G.NYXHUB or not _G.NYXHUB.Window then
-    warn("[NYXHUB][AutomaticTab] Window not found.")
-    return
-end
+if not _G.NYXHUB or not _G.NYXHUB.Window then return end
 
 local Window = _G.NYXHUB.Window
 local WindUI = _G.NYXHUB.WindUI
+local AutoSellAPI = _G.NYXHUB.Modules["automatic/autosellAPI.lua"]
 
--- LOAD API
-local AutoSell = _G.NYXHUB.Modules["automatic/autosellAPI.lua"] or _G.AutoSellSystem
-if not AutoSell then
-    warn("[NYXHUB][AutomaticTab] AutoSellSystem not loaded")
+if not AutoSellAPI then
+    warn("[AutomaticTab] AutoSellAPI not found")
     return
 end
 
--- TAB
-local tab = Window:Tab({
+local automatic = Window:Tab({
     Title = "Automatic",
-    Icon = "repeat"
+    Icon = "loader",
 })
 
--- =========================================================
--- AUTO SELL SECTION
--- =========================================================
-local sellSec = tab:Section({
-    Title = "Auto Sell"
+local sellSec = automatic:Section({
+    Title = "Auto Sell Fish"
 })
 
--- ===============================
--- MANUAL SELL
--- ===============================
-sellSec:Button({
-    Title = "Sell All Now",
-    Callback = function()
-        local ok = AutoSell.SellOnce()
-        WindUI:Notify({
-            Title = ok and "Sell Executed" or "Sell Failed",
-            Duration = 2,
-            Icon = ok and "check" or "x"
-        })
-    end
-})
+-- ================= METHOD DROPDOWN =================
+local valueInput
 
-sellSec:Divider()
-
--- ===============================
--- TIMER MODE
--- ===============================
-sellSec:Input({
-    Title = "Timer Interval (seconds)",
-    Placeholder = "5",
-    Default = "5",
+sellSec:Dropdown({
+    Title = "Method",
+    Values = { "Delay", "Count" },
+    Value = "Delay",
     Callback = function(v)
-        AutoSell.Timer.SetInterval(tonumber(v))
-    end
-})
+        AutoSellAPI.SetMethod(v)
 
-sellSec:Toggle({
-    Title = "Enable Auto Sell (Timer)",
-    Callback = function(state)
-        if state then
-            AutoSell.Count.Stop() -- mutual exclusive
-            AutoSell.Timer.Start()
-        else
-            AutoSell.Timer.Stop()
+        if valueInput then
+            if v == "Delay" then
+                valueInput:SetTitle("Sell Delay (Seconds)")
+                valueInput:SetPlaceholder("e.g. 50")
+            else
+                valueInput:SetTitle("Sell at Fish Count")
+                valueInput:SetPlaceholder("e.g. 100")
+            end
         end
     end
 })
 
-sellSec:Divider()
-
--- ===============================
--- COUNT MODE
--- ===============================
-sellSec:Input({
-    Title = "Sell When Bag >= (Count)",
-    Placeholder = "235",
-    Default = "235",
+-- ================= VALUE INPUT =================
+valueInput = sellSec:Input({
+    Title = "Sell Delay (Seconds)",
+    Placeholder = "50",
+    Default = "50",
     Callback = function(v)
-        AutoSell.Count.SetTarget(tonumber(v))
+        AutoSellAPI.SetValue(v)
     end
 })
 
+sellSec:Divider()
+
+-- ================= TOGGLE =================
 sellSec:Toggle({
-    Title = "Enable Auto Sell (By Count)",
+    Title = "Enable Auto Sell",
     Callback = function(state)
         if state then
-            AutoSell.Timer.Stop() -- mutual exclusive
-            AutoSell.Count.Start()
+            AutoSellAPI.Start()
+            WindUI:Notify({
+                Title = "Auto Sell ON",
+                Content = AutoSellAPI.Method .. " : " .. tostring(AutoSellAPI.Value),
+                Duration = 2,
+                Icon = "check"
+            })
         else
-            AutoSell.Count.Stop()
+            AutoSellAPI.Stop()
+            WindUI:Notify({
+                Title = "Auto Sell OFF",
+                Duration = 2,
+                Icon = "x"
+            })
         end
     end
 })
 
-sellSec:Divider()
-
--- ===============================
--- STATUS DISPLAY
--- ===============================
-sellSec:Button({
-    Title = "Check Auto Sell Status",
-    Callback = function()
-        local stats = AutoSell.GetStats()
-        local timer = stats.timerStatus
-        local count = stats.countStatus
-
-        WindUI:Notify({
-            Title = "Auto Sell Status",
-            Duration = 4,
-            Content = string.format(
-                "Remote: %s\nTotal Sells: %d\n\nTimer: %s (%ds)\nCount: %s (%d/%d)",
-                stats.remoteFound and "Found" or "Missing",
-                stats.totalSells,
-                timer.enabled and "ON" or "OFF",
-                timer.interval,
-                count.enabled and "ON" or "OFF",
-                count.current,
-                count.target
-            ),
-            Icon = "info"
-        })
-    end
-})
-
--- =========================================================
--- STOP ALL AUTOMATIC
--- =========================================================
-tab:Button({
-    Title = "🛑 STOP ALL AUTOMATIC",
-    Callback = function()
-        AutoSell.Timer.Stop()
-        AutoSell.Count.Stop()
-
-        WindUI:Notify({
-            Title = "Automatic Stopped",
-            Content = "All auto sell modes disabled",
-            Duration = 2.5,
-            Icon = "alert-triangle"
-        })
-    end
-})

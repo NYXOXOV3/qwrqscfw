@@ -12,7 +12,7 @@ local GITHUB_RAW = "https://raw.githubusercontent.com/NYXOXOV3/qwrqscfw/main/"
 local HttpService = game:GetService("HttpService")
 
 -- ================= UI CORE =================
-local Version = "1.6.64"
+local Version = "1.6.63"
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
 
 local Window = WindUI:CreateWindow({

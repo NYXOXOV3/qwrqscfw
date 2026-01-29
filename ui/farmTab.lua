@@ -57,16 +57,16 @@ if not BlatantV4 then
     warn("[FarmTab] BlatantV4 API not loaded")
     return
 end
-local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
-if not BlatantV5 then
-    warn("[FarmTab] BlatantV5 API not loaded")
-    return
-end
-local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
-if not BlatantV6 then
-    warn("[FarmTab] BlatantV6 API not loaded")
-    return
-end
+--local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
+--if not BlatantV5 then
+--    warn("[FarmTab] BlatantV5 API not loaded")
+--    return
+--end
+--local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
+--if not BlatantV6 then
+--    warn("[FarmTab] BlatantV6 API not loaded")
+--    return
+--end
 local AreaAPI = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
 if not AreaAPI then
     warn("[FarmTab] AreaPositionAPI not loaded")

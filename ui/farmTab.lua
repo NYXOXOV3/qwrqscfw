@@ -57,11 +57,11 @@ if not BlatantV4 then
     warn("[FarmTab] BlatantV4 API not loaded")
     return
 end
---local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
---if not BlatantV5 then
---    warn("[FarmTab] BlatantV5 API not loaded")
---    return
---end
+local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
+if not BlatantV5 then
+    warn("[FarmTab] BlatantV5 API not loaded")
+    return
+end
 --local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
 --if not BlatantV6 then
 --    warn("[FarmTab] BlatantV6 API not loaded")
@@ -543,6 +543,84 @@ blatantv4:Toggle({
         end
     end
 })
+
+-- =========================================================
+-- BLATANT V5 (AUTO PING TUNED)
+-- =========================================================
+local blatantv5 = farm:Section({ Title = "Blatant V5 Auto Tune" })
+
+blatantv5:Input({
+    Title = "Complete Delay",
+    Placeholder = tostring(BlatantV5.Settings.CompleteDelay),
+    Default = tostring(BlatantV5.Settings.CompleteDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV5.UpdateSettings(n, nil)
+        end
+    end
+})
+
+blatantv5:Input({
+    Title = "Cancel Delay",
+    Placeholder = tostring(BlatantV5.Settings.CancelDelay),
+    Default = tostring(BlatantV5.Settings.CancelDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV5.UpdateSettings(nil, n)
+        end
+    end
+})
+
+blatantv5:Toggle({
+    Title = "Auto Tune Delay",
+    Value = BlatantV5.Settings.AutoTune,
+    Callback = function(v)
+        BlatantV5.Settings.AutoTune = v
+    end
+})
+
+-- INFO PING
+local pingLabel = blatantv5:Label({
+    Title = "Ping: 0 ms"
+})
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+
+        if BlatantV5 and BlatantV5.Stats then
+            local ping = math.floor((BlatantV5.Stats.ping or 0) * 1000)
+            pingLabel:SetTitle("Ping: "..ping.." ms")
+        end
+    end
+end)
+
+-- TOGGLE
+blatantv5:Toggle({
+    Title = "Enable Blatant V5",
+    Callback = function(state)
+        if state then
+            BlatantV5.Start()
+            WindUI:Notify({
+                Title = "Blatant V5 ON",
+                Duration = 2,
+                Icon = "zap"
+            })
+        else
+            BlatantV5.Stop()
+            WindUI:Notify({
+                Title = "Blatant V5 OFF",
+                Duration = 2,
+                Icon = "x"
+            })
+        end
+    end
+})
+
+blatantv5:Divider()
+
 
 local areafish = farm:Section({ Title = "Farm Area" })
 

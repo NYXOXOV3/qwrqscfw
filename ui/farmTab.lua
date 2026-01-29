@@ -582,7 +582,7 @@ blatantv5:Toggle({
 })
 
 -- INFO PING
-local pingLabel = blatantv5:Label({
+local pingLabel = blatantv5:Paragraph({
     Title = "Ping: 0 ms"
 })
 

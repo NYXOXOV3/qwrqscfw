@@ -52,6 +52,21 @@ if not BlatantV3FixAPI then
     warn("[FarmTab] BlatantV3FixAPI API not loaded")
     return
 end
+local BlatantV4 = _G.NYXHUB.Modules["farm/blatant4API.lua"]
+if not BlatantV4 then
+    warn("[FarmTab] BlatantV4 API not loaded")
+    return
+end
+local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
+if not BlatantV5 then
+    warn("[FarmTab] BlatantV5 API not loaded")
+    return
+end
+local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
+if not BlatantV6 then
+    warn("[FarmTab] BlatantV6 API not loaded")
+    return
+end
 local AreaAPI = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
 if not AreaAPI then
     warn("[FarmTab] AreaPositionAPI not loaded")
@@ -470,6 +485,65 @@ blatantv3:Toggle({
     end
 })
 blatantv3:Divider()
+
+local blatantv4 = farm:Section ({Title = "Blatant Beta"})
+blatantv4:Input({
+    Title = "Charge Delay",
+    Placeholder = tostring(BlatantV4.Settings.ChargeDelay),
+    Default = tostring(BlatantV4.Settings.ChargeDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV4.UpdateSettings(n, nil, nil)
+        end
+    end
+})
+
+blatantv4:Input({
+    Title = "Complete Delay",
+    Placeholder = tostring(BlatantV4.Settings.CompleteDelay),
+    Default = tostring(BlatantV4.Settings.CompleteDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV4.UpdateSettings(nil, n, nil)
+        end
+    end
+})
+
+blatantv4:Input({
+    Title = "Cancel Delay",
+    Placeholder = tostring(BlatantV4.Settings.CancelDelay),
+    Default = tostring(BlatantV4.Settings.CancelDelay),
+    Callback = function(v)
+        local n = tonumber(v)
+        if n then
+            BlatantV4.UpdateSettings(nil, nil, n)
+        end
+    end
+})
+
+blatantv4:Toggle({
+    Title = "Enable Blatant V4",
+    Callback = function(state)
+        if state then
+            BlatantV4.Start()
+            WindUI:Notify({
+                Title = "Blatant V4 ON",
+                Duration = 2,
+                Icon = "zap"
+            })
+        else
+            BlatantV4.Stop()
+            WindUI:Notify({
+                Title = "Blatant V4 OFF",
+                Duration = 2,
+                Icon = "x"
+            })
+        end
+    end
+})
+
 local areafish = farm:Section({ Title = "Farm Area" })
 
 -- DROPDOWN

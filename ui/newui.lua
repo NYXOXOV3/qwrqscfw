@@ -6666,7 +6666,11 @@ function Library:CreateWindow(WindowInfo)
             Tab:RefreshSides()
         end
 
-        function Tab:AddGroupbox(Info)
+        function Tab:AddGroupbox(InfoOrName, IconName)
+            local Info = InfoOrName
+            if typeof(InfoOrName) ~= "table" then
+                Info = { Name = InfoOrName or "Group", IconName = IconName }
+            end
             local BoxHolder = New("Frame", {
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
@@ -6776,13 +6780,7 @@ function Library:CreateWindow(WindowInfo)
             return Groupbox
         end
 
-        function Tab:AddLeftGroupbox(Name, IconName)
-            return Tab:AddGroupbox({ Side = 1, Name = Name, IconName = IconName })
-        end
-
-        function Tab:AddRightGroupbox(Name, IconName)
-            return Tab:AddGroupbox({ Side = 2, Name = Name, IconName = IconName })
-        end
+        -- Deprecated: AddLeftGroupbox/AddRightGroupbox removed; use Tab:AddGroupbox(Name, IconName)
 
         function Tab:AddTabbox(Info)
             local BoxHolder = New("Frame", {

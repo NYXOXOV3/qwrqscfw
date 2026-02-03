@@ -14,7 +14,8 @@ local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
 local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
 local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
 local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
-local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+--local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+local RF_FishingCompleted = netFolder:WaitForChild("RF/CatchFishCompleted")
 local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
 
 local BlatantV4 = {}
@@ -49,7 +50,7 @@ local function fishingLoop()
         task.wait(BlatantV4.Settings.CompleteDelay)
 
         safeFire(function()
-            RE_FishingCompleted:FireServer()
+            RF_FishingCompleted:InvokeServer()
         end)
 
         task.wait(BlatantV4.Settings.CancelDelay)
@@ -67,7 +68,7 @@ RE_MinigameChanged.OnClientEvent:Connect(function()
         task.wait(BlatantV4.Settings.CompleteDelay)
 
         safeFire(function()
-            RE_FishingCompleted:FireServer()
+            RF_FishingCompleted:InvokeServer()
         end)
 
         task.wait(BlatantV4.Settings.CancelDelay)

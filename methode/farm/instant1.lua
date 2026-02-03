@@ -22,7 +22,8 @@ local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
 local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
 local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
 local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
-local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+--local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+local RF_FishingCompleted = netFolder:WaitForChild("RF/CatchFishCompleted")
 local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
 local RE_FishCaught = netFolder:WaitForChild("RE/FishCaught")
 
@@ -119,7 +120,7 @@ function fishing.Cast()
         task.delay(fishing.Settings.MaxWaitTime * 0.7, function()
             if fishing.WaitingHook and fishing.Running then
                 pcall(function()
-                    RE_FishingCompleted:FireServer()
+                    RF_FishingCompleted:InvokeServer()
                 end)
             end
         end)
@@ -128,7 +129,7 @@ function fishing.Cast()
             if fishing.WaitingHook and fishing.Running then
                 fishing.WaitingHook = false
                 pcall(function()
-                    RE_FishingCompleted:FireServer()
+                    RF_FishingCompleted:InvokeServer()
                 end)
 
                 task.wait(fishing.Settings.RetryDelay)
@@ -173,7 +174,7 @@ function fishing.Start()
                 task.wait(fishing.Settings.HookDetectionDelay)
 
                 pcall(function()
-                    RE_FishingCompleted:FireServer()
+                    RF_FishingCompleted:InvokeServer()
                 end)
 
                 task.wait(fishing.Settings.CancelDelay)

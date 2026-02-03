@@ -49,7 +49,7 @@ RE_MinigameChanged.OnClientEvent:Connect(function(state)
 
         task.spawn(function()
             task.wait(fishing.Settings.HookWaitTime)
-            RF_FishingCompleted:FireServer()
+            RF_FishingCompleted:InvokeServer()
 
             task.wait(fishing.Settings.CancelDelay)
             pcall(function()
@@ -100,7 +100,7 @@ function fishing.Cast()
             task.delay(fishing.Settings.TimeoutDelay, function()
                 if fishing.WaitingHook and fishing.Running then
                     fishing.WaitingHook = false
-                    RF_FishingCompleted:FireServer()
+                    RF_FishingCompleted:InvokeServer()
 
                     task.wait(fishing.Settings.CancelDelay)
                     pcall(function()

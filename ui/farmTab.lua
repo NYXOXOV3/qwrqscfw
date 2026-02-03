@@ -194,7 +194,7 @@ legit2:Toggle({
     end
 })
 legit2:Divider()
-local blatant = farm:Section({ Title = "Blatant Stabil" })
+local blatant = farm:Section({ Title = "Blatant Beta" })
 
 blatant:Toggle({
     Title = "Instant Fishing (Blatant)",

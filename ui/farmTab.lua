@@ -194,10 +194,10 @@ legit2:Toggle({
     end
 })
 legit2:Divider()
-local blatant = farm:Section({ Title = "Blatant Beta" })
+local blatant = farm:Section({ Title = "Blatant Beta (New)" })
 
 blatant:Toggle({
-    Title = "Instant Fishing (Blatant)",
+    Title = "Blatant (New)",
     Callback = function(v)
         LegitAPI.Stop()
         AutoClickAPI.Stop()
@@ -207,8 +207,8 @@ blatant:Toggle({
 
 blatant:Input({
     Title = "Cancel Delay",
-    Default = "1.75",
-    Placeholder = "1.75",
+    Default = "0.90",
+    Placeholder = "0.90",
     Callback = function(v)
         BlatantAPI.SetDelay(tonumber(v), nil)
     end
@@ -216,8 +216,8 @@ blatant:Input({
 
 blatant:Input({
     Title = "Complete Delay",
-    Default = "1.33",
-    Placeholder = "1.33",
+    Default = "0.89",
+    Placeholder = "0.89",
     Callback = function(v)
         BlatantAPI.SetDelay(nil, tonumber(v))
     end

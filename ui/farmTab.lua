@@ -621,6 +621,179 @@ blatantv5:Toggle({
 
 blatantv5:Divider()
 
+-- =========================================================
+-- BLATANT V6 (Continuous Charging Fix)
+-- =========================================================
+local blatantv6 = farm:Section({ Title = "Blatant V6 - Continuous" })
+
+-- Load BlatantV6 API
+local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
+if BlatantV6 then
+    -- CHARGE DELAY
+    blatantv6:Input({
+        Title = "Charge Delay",
+        Placeholder = tostring(BlatantV6.Settings.ChargeDelay or 0.2),
+        Default = tostring(BlatantV6.Settings.ChargeDelay or 0.2),
+        Callback = function(v)
+            local n = tonumber(v)
+            if n and n > 0 then
+                BlatantV6.UpdateSettings(n, nil, nil, nil, nil)
+            end
+        end
+    })
+    
+    -- RETRY DELAY
+    blatantv6:Input({
+        Title = "Retry Delay",
+        Placeholder = tostring(BlatantV6.Settings.RetryDelay or 0.05),
+        Default = tostring(BlatantV6.Settings.RetryDelay or 0.05),
+        Callback = function(v)
+            local n = tonumber(v)
+            if n and n > 0 then
+                BlatantV6.UpdateSettings(nil, n, nil, nil, nil)
+            end
+        end
+    })
+    
+    -- MAX RETRIES
+    blatantv6:Input({
+        Title = "Max Retries",
+        Placeholder = tostring(BlatantV6.Settings.MaxRetries or 3),
+        Default = tostring(BlatantV6.Settings.MaxRetries or 3),
+        Callback = function(v)
+            local n = tonumber(v)
+            if n and n >= 1 then
+                BlatantV6.UpdateSettings(nil, nil, n, nil, nil)
+            end
+        end
+    })
+    
+    -- COMPLETE DELAY
+    blatantv6:Input({
+        Title = "Complete Delay",
+        Placeholder = tostring(BlatantV6.Settings.CompleteDelay or 1.97),
+        Default = tostring(BlatantV6.Settings.CompleteDelay or 1.97),
+        Callback = function(v)
+            local n = tonumber(v)
+            if n and n > 0 then
+                BlatantV6.UpdateSettings(nil, nil, nil, n, nil)
+            end
+        end
+    })
+    
+    -- CANCEL DELAY
+    blatantv6:Input({
+        Title = "Cancel Delay",
+        Placeholder = tostring(BlatantV6.Settings.CancelDelay or 1.98),
+        Default = tostring(BlatantV6.Settings.CancelDelay or 1.98),
+        Callback = function(v)
+            local n = tonumber(v)
+            if n and n > 0 then
+                BlatantV6.UpdateSettings(nil, nil, nil, nil, n)
+            end
+        end
+    })
+    
+    -- STATUS INDICATOR
+    local statusLabel = blatantv6:Paragraph({
+        Title = "Status: IDLE",
+        Content = "Ready to start"
+    })
+    
+    -- UPDATE STATUS THREAD
+    task.spawn(function()
+        while true do
+            task.wait(0.5)
+            if BlatantV6 and BlatantV6.Stats then
+                local status = "IDLE"
+                if BlatantV6.Stats.Active then
+                    status = "RUNNING ⚡"
+                end
+                
+                local casts = BlatantV6.Stats.Casts or 0
+                local fish = BlatantV6.Stats.FishCaught or 0
+                
+                statusLabel:SetTitle("Status: " .. status)
+                statusLabel:SetContent(string.format("Casts: %d | Fish: %d", casts, fish))
+            end
+        end
+    end)
+    
+    -- TEST CHARGE BUTTON
+    blatantv6:Button({
+        Title = "Test Charge",
+        Callback = function()
+            local success = BlatantV6.TestCharge()
+            WindUI:Notify({
+                Title = "Charge Test",
+                Description = success and "✅ Charged Successfully" or "❌ Failed to Charge",
+                Duration = 2,
+                Icon = success and "check" or "x"
+            })
+        end
+    })
+    
+    -- MAIN TOGGLE
+    blatantv6:Toggle({
+        Title = "Enable Continuous Fishing",
+        Callback = function(state)
+            -- MATIKAN SEMUA API LAIN
+            local mods = _G.NYXHUB.Modules
+            if mods["farm/autoclickAPI.lua"] then mods["farm/autoclickAPI.lua"].Stop() end
+            if mods["farm/legitAPI.lua"] then mods["farm/legitAPI.lua"].Stop() end
+            if mods["farm/legit1API.lua"] then mods["farm/legit1API.lua"].Stop() end
+            if mods["farm/legit2API.lua"] then mods["farm/legit2API.lua"].Stop() end
+            if mods["farm/blatantAPI.lua"] then mods["farm/blatantAPI.lua"].Stop() end
+            if mods["farm/blatant1API.lua"] then mods["farm/blatant1API.lua"].Stop() end
+            if mods["farm/blatant2API.lua"] then mods["farm/blatant2API.lua"].Stop() end
+            if mods["farm/blatant3API.lua"] then mods["farm/blatant3API.lua"].Stop() end
+            if mods["farm/blatant4API.lua"] then mods["farm/blatant4API.lua"].Stop() end
+            if mods["farm/blatant5API.lua"] then mods["farm/blatant5API.lua"].Stop() end
+            if mods["farm/blatantv1.lua"] then mods["farm/blatantv1.lua"].Stop() end
+            
+            -- KONTROL BLATANT V6
+            if state then
+                BlatantV6.Start()
+                WindUI:Notify({
+                    Title = "Blatant V6 ON",
+                    Description = "Continuous charging enabled",
+                    Duration = 2,
+                    Icon = "zap"
+                })
+            else
+                BlatantV6.Stop()
+                WindUI:Notify({
+                    Title = "Blatant V6 OFF",
+                    Duration = 2,
+                    Icon = "x"
+                })
+            end
+        end
+    })
+    
+    -- RESET BUTTON
+    blatantv6:Button({
+        Title = "Reset Settings",
+        Callback = function()
+            BlatantV6.ResetSettings()
+            WindUI:Notify({
+                Title = "Settings Reset",
+                Description = "All settings restored to default",
+                Duration = 2,
+                Icon = "refresh-cw"
+            })
+        end
+    })
+    
+else
+    -- Jika BlatantV6 tidak ditemukan
+    blatantv6:Paragraph({
+        Title = "⚠️ BlatantV6 API not loaded",
+        Content = "Make sure blatant6API.lua is in NYXHUB modules"
+    })
+end
+
+blatantv6:Divider()
 
 local areafish = farm:Section({ Title = "Farm Area" })
 

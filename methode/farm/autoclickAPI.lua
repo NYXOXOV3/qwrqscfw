@@ -17,7 +17,8 @@ local Net = ReplicatedStorage
 
 local RF_Charge = Net["RF/ChargeFishingRod"]
 local RF_Start  = Net["RF/RequestFishingMinigameStarted"]
-local RE_Done   = Net["RE/FishingCompleted"]
+--local RE_Done   = Net["RE/FishingCompleted"]
+local RF_Done   = Net["RF/CatchFishCompleted"]
 local RF_Cancel = Net["RF/CancelFishingInputs"]
 local RE_Equip  = Net["RE/EquipToolFromHotbar"]
 
@@ -43,7 +44,7 @@ function AutoClickAPI.Start()
 
             task.wait(AutoClickAPI.Delay)
 
-            pcall(function() RE_Done:FireServer() end)
+            pcall(function() RF_Done:InvokeServer() end)
             task.wait(0.3)
             pcall(function() RF_Cancel:InvokeServer() end)
 

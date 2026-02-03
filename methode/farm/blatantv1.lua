@@ -13,7 +13,8 @@ local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
 local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
 local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
 local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
-local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+--local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
+local RF_FishingCompleted = netFolder:WaitForChild("RF/FishCompleted")
 local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
 
 -- Module table
@@ -55,7 +56,7 @@ local function ultraSpamLoop()
         task.wait(BlatantBeta.Settings.CompleteDelay)
         
         safeFire(function()
-            RE_FishingCompleted:FireServer()
+            RF_FishingCompleted:InvokeServer()
         end)
         
         task.wait(BlatantBeta.Settings.CancelDelay)
@@ -72,7 +73,7 @@ RE_MinigameChanged.OnClientEvent:Connect(function(state)
         task.wait(BlatantBeta.Settings.CompleteDelay)
         
         safeFire(function()
-            RE_FishingCompleted:FireServer()
+            RF_FishingCompleted:InvokeServer()
         end)
         
         task.wait(BlatantBeta.Settings.CancelDelay)

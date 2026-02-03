@@ -622,22 +622,53 @@ blatantv5:Toggle({
 blatantv5:Divider()
 
 -- =========================================================
--- BLATANT V6 (Continuous Charging Fix)
+-- BLATANT V6 (Continuous Charging Fix) - FIXED VERSION
 -- =========================================================
 local blatantv6 = farm:Section({ Title = "Blatant V6 - Continuous" })
 
--- Load BlatantV6 API
+-- Load BlatantV6 API dengan error handling
 local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
 if BlatantV6 then
+    -- Default values untuk safety
+    local defaultSettings = {
+        ChargeDelay = 0.2,
+        RetryDelay = 0.05,
+        MaxRetries = 3,
+        CompleteDelay = 1.97,
+        CancelDelay = 1.98
+    }
+    
+    -- Fungsi untuk mendapatkan setting dengan fallback
+    local function getSetting(key)
+        if BlatantV6.Settings and BlatantV6.Settings[key] ~= nil then
+            return BlatantV6.Settings[key]
+        elseif BlatantV6.Config and BlatantV6.Config[key] ~= nil then
+            return BlatantV6.Config[key]
+        else
+            return defaultSettings[key]
+        end
+    end
+    
+    -- Fungsi untuk update setting dengan safety
+    local function updateSettings(charge, retry, maxRetries, complete, cancel)
+        if BlatantV6.UpdateSettings then
+            BlatantV6.UpdateSettings(charge, retry, maxRetries, complete, cancel)
+        elseif BlatantV6.SetDelay then
+            -- Fallback untuk API lama
+            if complete then BlatantV6.SetDelay(nil, complete) end
+            if cancel then BlatantV6.SetDelay(cancel, nil) end
+        end
+    end
+    
     -- CHARGE DELAY
     blatantv6:Input({
         Title = "Charge Delay",
-        Placeholder = tostring(BlatantV6.Settings.ChargeDelay or 0.2),
-        Default = tostring(BlatantV6.Settings.ChargeDelay or 0.2),
+        Placeholder = tostring(getSetting("ChargeDelay")),
+        Default = tostring(getSetting("ChargeDelay")),
         Callback = function(v)
             local n = tonumber(v)
             if n and n > 0 then
-                BlatantV6.UpdateSettings(n, nil, nil, nil, nil)
+                updateSettings(n, nil, nil, nil, nil)
             end
         end
     })
@@ -645,12 +676,12 @@ if BlatantV6 then
     -- RETRY DELAY
     blatantv6:Input({
         Title = "Retry Delay",
-        Placeholder = tostring(BlatantV6.Settings.RetryDelay or 0.05),
-        Default = tostring(BlatantV6.Settings.RetryDelay or 0.05),
+        Placeholder = tostring(getSetting("RetryDelay")),
+        Default = tostring(getSetting("RetryDelay")),
         Callback = function(v)
             local n = tonumber(v)
             if n and n > 0 then
-                BlatantV6.UpdateSettings(nil, n, nil, nil, nil)
+                updateSettings(nil, n, nil, nil, nil)
             end
         end
     })
@@ -658,12 +689,12 @@ if BlatantV6 then
     -- MAX RETRIES
     blatantv6:Input({
         Title = "Max Retries",
-        Placeholder = tostring(BlatantV6.Settings.MaxRetries or 3),
-        Default = tostring(BlatantV6.Settings.MaxRetries or 3),
+        Placeholder = tostring(getSetting("MaxRetries")),
+        Default = tostring(getSetting("MaxRetries")),
         Callback = function(v)
             local n = tonumber(v)
             if n and n >= 1 then
-                BlatantV6.UpdateSettings(nil, nil, n, nil, nil)
+                updateSettings(nil, nil, n, nil, nil)
             end
         end
     })
@@ -671,12 +702,12 @@ if BlatantV6 then
     -- COMPLETE DELAY
     blatantv6:Input({
         Title = "Complete Delay",
-        Placeholder = tostring(BlatantV6.Settings.CompleteDelay or 1.97),
-        Default = tostring(BlatantV6.Settings.CompleteDelay or 1.97),
+        Placeholder = tostring(getSetting("CompleteDelay")),
+        Default = tostring(getSetting("CompleteDelay")),
         Callback = function(v)
             local n = tonumber(v)
             if n and n > 0 then
-                BlatantV6.UpdateSettings(nil, nil, nil, n, nil)
+                updateSettings(nil, nil, nil, n, nil)
             end
         end
     })
@@ -684,12 +715,12 @@ if BlatantV6 then
     -- CANCEL DELAY
     blatantv6:Input({
         Title = "Cancel Delay",
-        Placeholder = tostring(BlatantV6.Settings.CancelDelay or 1.98),
-        Default = tostring(BlatantV6.Settings.CancelDelay or 1.98),
+        Placeholder = tostring(getSetting("CancelDelay")),
+        Default = tostring(getSetting("CancelDelay")),
         Callback = function(v)
             local n = tonumber(v)
             if n and n > 0 then
-                BlatantV6.UpdateSettings(nil, nil, nil, nil, n)
+                updateSettings(nil, nil, nil, nil, n)
             end
         end
     })
@@ -700,18 +731,25 @@ if BlatantV6 then
         Content = "Ready to start"
     })
     
-    -- UPDATE STATUS THREAD
+    -- UPDATE STATUS THREAD dengan safety check
     task.spawn(function()
         while true do
             task.wait(0.5)
-            if BlatantV6 and BlatantV6.Stats then
+            if BlatantV6 then
                 local status = "IDLE"
-                if BlatantV6.Stats.Active then
-                    status = "RUNNING ⚡"
-                end
+                local casts = 0
+                local fish = 0
                 
-                local casts = BlatantV6.Stats.Casts or 0
-                local fish = BlatantV6.Stats.FishCaught or 0
+                -- Cek berbagai kemungkinan struktur stats
+                if BlatantV6.Stats then
+                    if BlatantV6.Stats.Active then
+                        status = "RUNNING ⚡"
+                    end
+                    casts = BlatantV6.Stats.Casts or 0
+                    fish = BlatantV6.Stats.FishCaught or 0
+                elseif BlantantV6.Active then
+                    status = BlatantV6.Active and "RUNNING ⚡" or "IDLE"
+                end
                 
                 statusLabel:SetTitle("Status: " .. status)
                 statusLabel:SetContent(string.format("Casts: %d | Fish: %d", casts, fish))
@@ -719,11 +757,26 @@ if BlatantV6 then
         end
     end)
     
-    -- TEST CHARGE BUTTON
+    -- TEST CHARGE BUTTON dengan safety check
     blatantv6:Button({
         Title = "Test Charge",
         Callback = function()
-            local success = BlatantV6.TestCharge()
+            local success = false
+            if BlatantV6.TestCharge then
+                success = BlatantV6.TestCharge()
+            elseif BlatantV6.EnsureCharged then
+                success = BlatantV6.EnsureCharged()
+            else
+                -- Fallback: coba panggil RF_Charge langsung
+                success = pcall(function()
+                    -- Anggap ada RF_Charge di global
+                    if RF_Charge then
+                        RF_Charge:InvokeServer(math.huge)
+                        return true
+                    end
+                end)
+            end
+            
             WindUI:Notify({
                 Title = "Charge Test",
                 Description = success and "✅ Charged Successfully" or "❌ Failed to Charge",
@@ -733,55 +786,83 @@ if BlatantV6 then
         end
     })
     
-    -- MAIN TOGGLE
+    -- MAIN TOGGLE dengan safety check
     blatantv6:Toggle({
         Title = "Enable Continuous Fishing",
         Callback = function(state)
             -- MATIKAN SEMUA API LAIN
             local mods = _G.NYXHUB.Modules
-            if mods["farm/autoclickAPI.lua"] then mods["farm/autoclickAPI.lua"].Stop() end
-            if mods["farm/legitAPI.lua"] then mods["farm/legitAPI.lua"].Stop() end
-            if mods["farm/legit1API.lua"] then mods["farm/legit1API.lua"].Stop() end
-            if mods["farm/legit2API.lua"] then mods["farm/legit2API.lua"].Stop() end
-            if mods["farm/blatantAPI.lua"] then mods["farm/blatantAPI.lua"].Stop() end
-            if mods["farm/blatant1API.lua"] then mods["farm/blatant1API.lua"].Stop() end
-            if mods["farm/blatant2API.lua"] then mods["farm/blatant2API.lua"].Stop() end
-            if mods["farm/blatant3API.lua"] then mods["farm/blatant3API.lua"].Stop() end
-            if mods["farm/blatant4API.lua"] then mods["farm/blatant4API.lua"].Stop() end
-            if mods["farm/blatant5API.lua"] then mods["farm/blatant5API.lua"].Stop() end
-            if mods["farm/blatantv1.lua"] then mods["farm/blatantv1.lua"].Stop() end
+            local apiList = {
+                "farm/autoclickAPI.lua",
+                "farm/legitAPI.lua",
+                "farm/legit1API.lua",
+                "farm/legit2API.lua",
+                "farm/blatantAPI.lua",
+                "farm/blatant1API.lua",
+                "farm/blatant2API.lua",
+                "farm/blatant3API.lua",
+                "farm/blatant4API.lua",
+                "farm/blatant5API.lua",
+                "farm/blatantv1.lua"
+            }
+            
+            for _, apiName in ipairs(apiList) do
+                if mods[apiName] and mods[apiName].Stop then
+                    pcall(mods[apiName].Stop, mods[apiName])
+                end
+            end
             
             -- KONTROL BLATANT V6
             if state then
-                BlatantV6.Start()
-                WindUI:Notify({
-                    Title = "Blatant V6 ON",
-                    Description = "Continuous charging enabled",
-                    Duration = 2,
-                    Icon = "zap"
-                })
+                if BlatantV6.Start then
+                    BlatantV6.Start()
+                    WindUI:Notify({
+                        Title = "Blatant V6 ON",
+                        Description = "Continuous charging enabled",
+                        Duration = 2,
+                        Icon = "zap"
+                    })
+                else
+                    WindUI:Notify({
+                        Title = "Error",
+                        Description = "BlatantV6.Start() not found",
+                        Duration = 2,
+                        Icon = "x"
+                    })
+                end
             else
-                BlatantV6.Stop()
-                WindUI:Notify({
-                    Title = "Blatant V6 OFF",
-                    Duration = 2,
-                    Icon = "x"
-                })
+                if BlatantV6.Stop then
+                    BlatantV6.Stop()
+                    WindUI:Notify({
+                        Title = "Blatant V6 OFF",
+                        Duration = 2,
+                        Icon = "x"
+                    })
+                end
             end
         end
     })
     
-    -- RESET BUTTON
+    -- RESET BUTTON dengan safety check
     blatantv6:Button({
         Title = "Reset Settings",
         Callback = function()
-            BlatantV6.ResetSettings()
-            WindUI:Notify({
-                Title = "Settings Reset",
-                Description = "All settings restored to default",
-                Duration = 2,
-                Icon = "refresh-cw"
-            })
+            if BlatantV6.ResetSettings then
+                BlatantV6.ResetSettings()
+                WindUI:Notify({
+                    Title = "Settings Reset",
+                    Description = "All settings restored to default",
+                    Duration = 2,
+                    Icon = "refresh-cw"
+                })
+            else
+                WindUI:Notify({
+                    Title = "Error",
+                    Description = "Reset function not available",
+                    Duration = 2,
+                    Icon = "x"
+                })
+            end
         end
     })
     
@@ -791,6 +872,29 @@ else
         Title = "⚠️ BlatantV6 API not loaded",
         Content = "Make sure blatant6API.lua is in NYXHUB modules"
     })
+    
+    -- Atau buat BlatantV6 placeholder untuk testing
+    warn("[FarmTab] BlatantV6 API not found, creating placeholder...")
+    _G.NYXHUB.Modules["farm/blatant6API.lua"] = {
+        Settings = {
+            ChargeDelay = 0.2,
+            RetryDelay = 0.05,
+            MaxRetries = 3,
+            CompleteDelay = 1.97,
+            CancelDelay = 1.98
+        },
+        Stats = {
+            Active = false,
+            Casts = 0,
+            FishCaught = 0
+        },
+        Start = function()
+            warn("BlatantV6 placeholder: Start called")
+        end,
+        Stop = function()
+            warn("BlatantV6 placeholder: Stop called")
+        end
+    }
 end
 
 blatantv6:Divider()

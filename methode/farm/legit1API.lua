@@ -112,14 +112,14 @@ function fishing.Cast()
 
         task.delay(fishing.Settings.MaxWaitTime * 0.7, function()
             if fishing.WaitingHook and fishing.Running then
-                pcall(RE_FishingCompleted.FireServer, RE_FishingCompleted)
+                pcall(RF_FishingCompleted.InvokeServer, RF_FishingCompleted)
             end
         end)
 
         task.delay(fishing.Settings.MaxWaitTime, function()
             if fishing.WaitingHook and fishing.Running then
                 fishing.WaitingHook = false
-                pcall(RE_FishingCompleted.FireServer, RE_FishingCompleted)
+                pcall(RF_FishingCompleted.InvokeServer, RF_FishingCompleted)
 
                 task.wait(fishing.Settings.RetryDelay)
                 pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
@@ -159,7 +159,7 @@ function fishing.Start()
                     fishing.WaitingHook = false
                     task.wait(fishing.Settings.HookDetectionDelay)
 
-                    pcall(RE_FishingCompleted.FireServer, RE_FishingCompleted)
+                    pcall(RF_FishingCompleted.InvokeServer, RF_FishingCompleted)
                     task.wait(fishing.Settings.CancelDelay)
                     pcall(RF_CancelFishingInputs.InvokeServer, RF_CancelFishingInputs)
 

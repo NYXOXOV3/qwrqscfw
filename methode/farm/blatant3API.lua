@@ -18,7 +18,8 @@ local netFolder = ReplicatedStorage
 local RF_ChargeFishingRod     = netFolder:WaitForChild("RF/ChargeFishingRod")
 local RF_RequestMinigame      = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
 local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
-local RE_FishingCompleted    = netFolder:WaitForChild("RE/FishingCompleted")
+--local RE_FishingCompleted    = netFolder:WaitForChild("RE/FishingCompleted")
+local RF_FishingCompleted    = netFolder:WaitForChild("RF/CatchFishCompleted")
 local RE_MinigameChanged     = netFolder:WaitForChild("RE/FishingMinigameChanged")
 local RE_FishCaught          = netFolder:WaitForChild("RE/FishCaught")
 
@@ -48,7 +49,7 @@ RE_MinigameChanged.OnClientEvent:Connect(function(state)
 
         task.spawn(function()
             task.wait(fishing.Settings.HookWaitTime)
-            RE_FishingCompleted:FireServer()
+            RF_FishingCompleted:FireServer()
 
             task.wait(fishing.Settings.CancelDelay)
             pcall(function()
@@ -99,7 +100,7 @@ function fishing.Cast()
             task.delay(fishing.Settings.TimeoutDelay, function()
                 if fishing.WaitingHook and fishing.Running then
                     fishing.WaitingHook = false
-                    RE_FishingCompleted:FireServer()
+                    RF_FishingCompleted:FireServer()
 
                     task.wait(fishing.Settings.CancelDelay)
                     pcall(function()

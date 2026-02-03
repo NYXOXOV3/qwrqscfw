@@ -73,8 +73,8 @@ local function DoFish_RAW()
         pcall(function()
             local t = tick()
             RF_Cancel:InvokeServer()
-            RF_Charge:InvokeServer({[1] = t})
-            RF_Start:InvokeServer(1, nil, t, nil)
+            RF_Charge:InvokeServer(math.huge)
+            RF_Start:InvokeServer(-139.630, 0.996, t)
         end)
     end)
 
@@ -90,7 +90,7 @@ local function FishingLoop_RAW()
     equipThread = task.spawn(function()
         while Config.Active do
             pcall(RE_Equip.FireServer, RE_Equip, 1)
-            task.wait(0.05)
+            task.wait(0.1)
         end
     end)
 

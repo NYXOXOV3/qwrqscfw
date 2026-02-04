@@ -76,11 +76,11 @@ if not SkinAPI then
     warn("[FarmTab] SkinAnimationAPI not loaded")
     return
 end
-local BlatantBeta = _G.NYXHUB.Modules["farm/blatantv1.lua"]
-if not BlatantBeta then
-    warn("[FarmTab] BlatantBeta not loaded")
-    return
-end
+--local BlatantBeta = _G.NYXHUB.Modules["farm/blatantv1.lua"]
+--if not BlatantBeta then
+--    warn("[FarmTab] BlatantBeta not loaded")
+--    return
+--end
 
 local farm = Window:Tab({
     Title = "Fishing",

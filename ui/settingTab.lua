@@ -204,22 +204,6 @@ visual:Toggle({
     end,
 })
 
-visual:Dropdown({
-    Title = "FPS Limit",
-    Values = {"30","60","90","120","144","165","240"},
-    Default = tostring(VisualAPI.UnlockFPS.Selected),
-    Callback = function(v)
-        VisualAPI.SetFPSCap(tonumber(v))
-    end,
-})
-
-visual:Toggle({
-    Title = "Unlock FPS",
-    Callback = function(v)
-        VisualAPI.ToggleUnlockFPS(v)
-    end,
-})
-
 visual:Toggle({
     Title = "Ping Panel",
     Desc = "Show FPS & Ping",

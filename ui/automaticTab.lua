@@ -123,3 +123,104 @@ sellSec:Toggle({
         end
     end
 })
+
+-- =========================================================
+-- AUTO FAVORITE SECTION
+-- =========================================================
+
+local AutoFavorite = _G.NYXHUB.Modules["automatic/autofavoritAPI.lua"]
+if not AutoFavorite then
+    warn("[AutomaticTab] autofavoritAPI.lua not loaded")
+else
+    local favSec = automatic:Section({
+        Title = "Auto Favorite Fish"
+    })
+
+    -- =========================
+    -- ENABLE TOGGLE
+    -- =========================
+    local favEnabled = false
+
+    favSec:Toggle({
+        Title = "Enable Auto Favorite",
+        Callback = function(state)
+            favEnabled = state
+            if state then
+                AutoFavorite.Start()
+                WindUI:Notify({
+                    Title = "Auto Favorite ON",
+                    Content = "Auto favorite system enabled",
+                    Duration = 2,
+                    Icon = "check"
+                })
+            else
+                AutoFavorite.Stop()
+                WindUI:Notify({
+                    Title = "Auto Favorite OFF",
+                    Duration = 2,
+                    Icon = "x"
+                })
+            end
+        end
+    })
+
+    favSec:Divider()
+
+    -- =========================
+    -- TIER MULTI SELECT
+    -- =========================
+    favSec:Dropdown({
+        Title = "Favorite by Tier",
+        Values = AutoFavorite.GetAllTiers(),
+        Multi = true,
+        Callback = function(selected)
+            AutoFavorite.ClearTiers()
+            if selected and #selected > 0 then
+                AutoFavorite.EnableTiers(selected)
+            end
+        end
+    })
+
+    favSec:Button({
+        Title = "Clear Tier Filter",
+        Callback = function()
+            AutoFavorite.ClearTiers()
+            WindUI:Notify({
+                Title = "Auto Favorite",
+                Content = "Tier filter cleared",
+                Duration = 1.5,
+                Icon = "rotate-ccw"
+            })
+        end
+    })
+
+    favSec:Divider()
+
+    -- =========================
+    -- VARIANT MULTI SELECT
+    -- =========================
+    favSec:Dropdown({
+        Title = "Favorite by Variant",
+        Values = AutoFavorite.GetAllVariants(),
+        Multi = true,
+        Callback = function(selected)
+            AutoFavorite.ClearVariants()
+            if selected and #selected > 0 then
+                AutoFavorite.EnableVariants(selected)
+            end
+        end
+    })
+
+    favSec:Button({
+        Title = "Clear Variant Filter",
+        Callback = function()
+            AutoFavorite.ClearVariants()
+            WindUI:Notify({
+                Title = "Auto Favorite",
+                Content = "Variant filter cleared",
+                Duration = 1.5,
+                Icon = "rotate-ccw"
+            })
+        end
+    })
+end

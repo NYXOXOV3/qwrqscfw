@@ -74,13 +74,13 @@ _G.NYXHUB.Modules.Security = Security
 local METHOD_LIST = {
     "info/infoAPI.lua",
 
-    "setting/configAPI.lua",
+    --"setting/configAPI.lua",
     "setting/securityAPI.lua",
     "setting/movementAPI.lua",
     "setting/modesAPI.lua",
     "setting/visualAPI.lua",
-    "setting/externalAPI.lua",
-    "setting/resetAPI.lua",
+    --"setting/externalAPI.lua",
+    --"setting/resetAPI.lua",
 
     "farm/autoclickAPI.lua",
     --"farm/blatantv1.lua",

@@ -83,18 +83,18 @@ local METHOD_LIST = {
     "setting/resetAPI.lua",
 
     "farm/autoclickAPI.lua",
-    "farm/blatantv1.lua",
+    --"farm/blatantv1.lua",
     "farm/legitAPI.lua",
-    "farm/legit1API.lua",
-    "farm/legit2API.lua",
+    --"farm/legit1API.lua",
+    --"farm/legit2API.lua",
     "farm/blatantAPI.lua",
-    "farm/blatant1API.lua",
-    "farm/blatant2API.lua",
-    "farm/blatant3API.lua",
-    "farm/blatant4API.lua",
-    "farm/blatant5API.lua",
-    "farm/blatant6API.lua",
-    "farm/fastperfectAPI.lua",
+    --"farm/blatant1API.lua",
+    --"farm/blatant2API.lua",
+    --"farm/blatant3API.lua",
+    --"farm/blatant4API.lua",
+    --"farm/blatant5API.lua",
+    --"farm/blatant6API.lua",
+    --"farm/fastperfectAPI.lua",
     "farm/areapositionAPI.lua",
     "farm/skinAnimationAPI.lua",
 
@@ -167,49 +167,61 @@ for _, tab in ipairs(UI_TABS) do
 end
 
 ---------------------------------------------------------------------
--- === FLOATING MOBILE BUTTON (PETAK, CORNER LEMBUT) ===
+-- === FLOATING MOBILE BUTTON (NYX THEME - DARK PURPLE) ===
 ---------------------------------------------------------------------
- 
+
 local Players = game:GetService("Players")
 local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
- 
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NYX_FloatingBtn"
 screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
- 
+
 local btn = Instance.new("ImageButton")
 btn.Name = "NYXButton"
-btn.Size = UDim2.new(0, 70, 0, 70)
- 
--- ===========================
--- POSISI TENGAH LAYAR KANAN
--- ===========================
+btn.Size = UDim2.new(0, 55, 0, 55)  -- Diperkecil dari 70px ke 55px
+
+-- Posisi tengah layar kanan
 btn.AnchorPoint = Vector2.new(0.5, 0.5)
 btn.Position = UDim2.new(0.95, 0, 0.50, 0)
- 
-btn.BackgroundColor3 = Color3.fromRGB(90, 0, 170)
+
+-- Warna ungu malam (Nyx theme) - lebih dalam & mistis
+btn.BackgroundColor3 = Color3.fromRGB(45, 15, 65)  -- Deep night purple
 btn.Image = "rbxassetid://137263312772667"
+btn.ImageColor3 = Color3.fromRGB(220, 180, 255)  -- Sedikit terang untuk ikon
 btn.BorderSizePixel = 0
 btn.Visible = true
 btn.Parent = screenGui
- 
+
+-- Corner lembut (disesuaikan proporsional dengan ukuran baru)
 local corner = Instance.new("UICorner", btn)
-corner.CornerRadius = UDim.new(0, 10)
- 
+corner.CornerRadius = UDim.new(0, 12)  -- Sedikit lebih bulat untuk estetika
+
+-- Stroke subtle dengan glow halus ala dewi malam
 local stroke = Instance.new("UIStroke", btn)
-stroke.Thickness = 2
-stroke.Color = Color3.fromRGB(255, 0, 255)
- 
+stroke.Thickness = 1.5
+stroke.Color = Color3.fromRGB(120, 60, 180)  -- Violet gelap bercahaya
+stroke.Transparency = 0.2  -- Sedikit transparan untuk efek glow lembut
+
+-- Opsional: Gradient dalam untuk kedalaman magis
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(65, 30, 95)),
+    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(45, 15, 65))
+})
+gradient.Rotation = 45
+gradient.Parent = btn
+
 ---------------------------------------------------------------------
--- === DRAG SUPPORT ===
+-- === DRAG SUPPORT (tetap responsif meski lebih kecil) ===
 ---------------------------------------------------------------------
- 
+
 local UIS = game:GetService("UserInputService")
 local dragging = false
 local dragStart, startPos
- 
+
 btn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch
     or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -218,14 +230,14 @@ btn.InputBegan:Connect(function(input)
         startPos = btn.Position
     end
 end)
- 
+
 btn.InputChanged:Connect(function(input)
     if dragging and (
         input.UserInputType == Enum.UserInputType.Touch or
         input.UserInputType == Enum.UserInputType.MouseMovement
     ) then
         local delta = input.Position - dragStart
- 
+
         btn.Position = UDim2.new(
             startPos.X.Scale,
             startPos.X.Offset + delta.X,
@@ -234,51 +246,41 @@ btn.InputChanged:Connect(function(input)
         )
     end
 end)
- 
+
 UIS.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch
     or input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
 end)
- 
+
 ---------------------------------------------------------------------
--- === PERFECT TOGGLE DOKUMENTASI RESMI ===
+-- === TOGGLE & SINKRONISASI WINDOW ===
 ---------------------------------------------------------------------
- 
+
 btn.MouseButton1Click:Connect(function()
-    Window:Toggle()
-end)
- 
----------------------------------------------------------------------
--- === SINKRON DENGAN X BUTTON ===
----------------------------------------------------------------------
- 
--- Jika Window ditutup (X biasa / close)
-Window:OnClose(function()
-    btn.Visible = true   -- tetap tampil
-end)
- 
--- Jika Window dibuka
-Window:OnOpen(function()
-    btn.Visible = true
-end)
- 
--- Jika Window dihancurkan (Destroy)
-Window:OnDestroy(function()
-    print("Window Destroyed")
- 
-    -- Hancurkan tombol mobile
-    if btn then
-        btn:Destroy()
-    end
- 
-    -- Hancurkan ScreenGui juga biar clean
-    if screenGui then
-        screenGui:Destroy()
+    if Window then
+        Window:Toggle()
     end
 end)
 
+if Window then
+    Window:OnClose(function()
+        btn.Visible = true
+    end)
+
+    Window:OnOpen(function()
+        btn.Visible = true
+    end)
+
+    Window:OnDestroy(function()
+        print("Window Destroyed")
+        pcall(function()
+            btn:Destroy()
+            screenGui:Destroy()
+        end)
+    end)
+end
 -- =================================================
 -- READY
 -- =================================================

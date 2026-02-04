@@ -117,7 +117,7 @@ local legit = farm:Section({ Title = "Legit"})
 legit:Slider({
     Title = "Normal Complete Delay",
     Step = 0.05,
-    Value = { Min = 0.5, Max = 5, Default = 1.5 },
+    Value = { Min = 0.01, Max = 5, Default = 0.5 },
     Callback = AutoClickAPI.SetDelay
 })
 
@@ -219,8 +219,8 @@ blatant:Toggle({
 
 blatant:Input({
     Title = "Cancel Delay",
-    Default = "0.90",
-    Placeholder = "0.90",
+    Default = "0.94",
+    Placeholder = "0.94",
     Callback = function(v)
         BlatantAPI.SetDelay(tonumber(v), nil)
     end
@@ -228,8 +228,8 @@ blatant:Input({
 
 blatant:Input({
     Title = "Complete Delay",
-    Default = "0.89",
-    Placeholder = "0.89",
+    Default = "0.83",
+    Placeholder = "0.83",
     Callback = function(v)
         BlatantAPI.SetDelay(nil, tonumber(v))
     end

@@ -51,29 +51,42 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 -- =========================================================
--- 2. FPS BOOSTER
+-- 2. FPS BOOSTER (RAW / BRUTAL)
 -- =========================================================
 
 VisualAPI.FPSBooster = {
     Enabled = false,
-    Original = { lighting = {}, effects = {}, water = {} },
     Conn = nil
 }
 
-local function optimize(obj)
+local function applyRawBoost(obj)
     if not VisualAPI.FPSBooster.Enabled then return end
+    if obj:IsDescendantOf(LocalPlayer.Character) then return end
+
     pcall(function()
-        if obj:IsA("BasePart") then
+        if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance") then
+            obj:Destroy()
+
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail")
+            or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+            obj:Destroy()
+
+        elseif obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+            obj:Destroy()
+
+        elseif obj:IsA("MeshPart") then
+            obj.TextureID = ""
+            obj.Material = Enum.Material.SmoothPlastic
             obj.Reflectance = 0
             obj.CastShadow = false
-        elseif obj:IsA("Decal") or obj:IsA("Texture") then
-            obj.Transparency = 1
-        elseif obj:IsA("SurfaceAppearance") then
-            obj:Destroy()
-        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-            obj.Enabled = false
-        elseif obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
-            obj.Enabled = false
+
+        elseif obj:IsA("SpecialMesh") then
+            obj.TextureId = ""
+
+        elseif obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+            obj.CastShadow = false
         end
     end)
 end
@@ -82,99 +95,73 @@ function VisualAPI.ToggleFPSBoost(state)
     if state and not VisualAPI.FPSBooster.Enabled then
         VisualAPI.FPSBooster.Enabled = true
 
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            optimize(obj)
-        end
+        -- ===== LIGHTING BRUTAL =====
+        pcall(function()
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.Brightness = 2.5
+            Lighting.Ambient = Color3.fromRGB(200,200,200)
+            Lighting.OutdoorAmbient = Color3.fromRGB(200,200,200)
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
+            Lighting.ShadowSoftness = 0
+            Lighting.ClockTime = 14
 
-        if Terrain then
-            VisualAPI.FPSBooster.Original.water = {
-                Reflectance = Terrain.WaterReflectance,
-                WaveSize = Terrain.WaterWaveSize,
-                WaveSpeed = Terrain.WaterWaveSpeed
-            }
-            Terrain.WaterWaveSize = 0
-            Terrain.WaterWaveSpeed = 0
-            Terrain.WaterReflectance = 0
-        end
-
-        VisualAPI.FPSBooster.Original.lighting = {
-            GlobalShadows = Lighting.GlobalShadows,
-            FogStart = Lighting.FogStart,
-            FogEnd = Lighting.FogEnd
-        }
-
-        Lighting.GlobalShadows = false
-        Lighting.FogStart = 0
-        Lighting.FogEnd = 1e6
-
-        for _, eff in ipairs(Lighting:GetChildren()) do
-            if eff:IsA("PostEffect") then
-                VisualAPI.FPSBooster.Original.effects[eff] = eff.Enabled
-                eff.Enabled = false
+            for _,v in ipairs(Lighting:GetChildren()) do
+                if v:IsA("BloomEffect") or v:IsA("BlurEffect")
+                or v:IsA("ColorCorrectionEffect") or v:IsA("DepthOfFieldEffect")
+                or v:IsA("SunRaysEffect") or v:IsA("Atmosphere") then
+                    v:Destroy()
+                end
             end
+        end)
+
+        -- ===== RENDER SETTINGS =====
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
+        end)
+
+        -- ===== CLEAN EXISTING =====
+        for _,obj in ipairs(workspace:GetDescendants()) do
+            applyRawBoost(obj)
         end
 
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        -- ===== AUTO CLEAN NEW OBJECT =====
+        if VisualAPI.FPSBooster.Conn then
+            VisualAPI.FPSBooster.Conn:Disconnect()
+        end
 
-        VisualAPI.FPSBooster.Conn = workspace.DescendantAdded:Connect(function(o)
-            task.wait(0.1)
-            optimize(o)
+        VisualAPI.FPSBooster.Conn = workspace.DescendantAdded:Connect(function(obj)
+            if not VisualAPI.FPSBooster.Enabled then return end
+            task.wait(0.15)
+            applyRawBoost(obj)
         end)
 
     elseif not state and VisualAPI.FPSBooster.Enabled then
         VisualAPI.FPSBooster.Enabled = false
 
-        if Terrain then
-            local w = VisualAPI.FPSBooster.Original.water
-            Terrain.WaterReflectance = w.Reflectance
-            Terrain.WaterWaveSize = w.WaveSize
-            Terrain.WaterWaveSpeed = w.WaveSpeed
-        end
-
-        local l = VisualAPI.FPSBooster.Original.lighting
-        Lighting.GlobalShadows = l.GlobalShadows
-        Lighting.FogStart = l.FogStart
-        Lighting.FogEnd = l.FogEnd
-
-        for eff, st in pairs(VisualAPI.FPSBooster.Original.effects) do
-            if eff and eff.Parent then eff.Enabled = st end
-        end
-
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
-
         if VisualAPI.FPSBooster.Conn then
             VisualAPI.FPSBooster.Conn:Disconnect()
             VisualAPI.FPSBooster.Conn = nil
         end
+
+        -- ⚠️ NO FULL RESTORE (REJOIN RECOMMENDED)
+        pcall(function()
+            Lighting.GlobalShadows = true
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.fromRGB(127,127,127)
+            Lighting.OutdoorAmbient = Color3.fromRGB(127,127,127)
+        end)
+
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+        end)
     end
 end
 
 -- =========================================================
--- 3. UNLOCK FPS (DROPDOWN + TOGGLE)
--- =========================================================
-
-VisualAPI.UnlockFPS = {
-    Enabled = false,
-    Selected = 60,
-    Caps = {30,60,90,120,144,165,240}
-}
-
-function VisualAPI.SetFPSCap(fps)
-    VisualAPI.UnlockFPS.Selected = fps
-    if VisualAPI.UnlockFPS.Enabled and setfpscap then
-        setfpscap(fps)
-    end
-end
-
-function VisualAPI.ToggleUnlockFPS(state)
-    VisualAPI.UnlockFPS.Enabled = state
-    if setfpscap then
-        setfpscap(state and VisualAPI.UnlockFPS.Selected or 60)
-    end
-end
-
--- =========================================================
--- 4. PLAYER ESP
+-- 3. PLAYER ESP
 -- =========================================================
 
 local espEnabled = false
@@ -267,10 +254,33 @@ local THEME = {
     STROKE = Color3.fromRGB(180, 120, 255),
     TITLE  = Color3.fromRGB(200, 170, 255),
     TEXT   = Color3.fromRGB(235, 235, 245),
-    GOOD   = Color3.fromRGB(140, 255, 200),
-    MID    = Color3.fromRGB(255, 200, 140),
-    BAD    = Color3.fromRGB(255, 120, 140),
+    GOOD   = Color3.fromRGB(140, 255, 200), -- hijau
+    MID    = Color3.fromRGB(255, 200, 140), -- kuning
+    BAD    = Color3.fromRGB(255, 120, 140), -- merah
 }
+
+-- =========================
+-- COLOR LOGIC
+-- =========================
+local function colorizeFPS(label, fps)
+    if fps <= 50 then
+        label.TextColor3 = THEME.GOOD
+    elseif fps <= 100 then
+        label.TextColor3 = THEME.MID
+    else
+        label.TextColor3 = THEME.BAD
+    end
+end
+
+local function colorizePing(label, ping)
+    if ping <= 80 then
+        label.TextColor3 = THEME.GOOD
+    elseif ping <= 150 then
+        label.TextColor3 = THEME.MID
+    else
+        label.TextColor3 = THEME.BAD
+    end
+end
 
 -- =========================
 -- INTERNAL GUI BUILDER
@@ -300,9 +310,7 @@ local function createMiniPanel()
     stroke.Thickness = 1.4
     stroke.Transparency = 0.45
 
-    -- =====================
-    -- FPS
-    -- =====================
+    -- FPS LABEL
     local fpsLabel = Instance.new("TextLabel", panel)
     fpsLabel.Position = UDim2.new(0, 12, 0, 8)
     fpsLabel.Size = UDim2.new(1, -60, 0, 22)
@@ -313,9 +321,7 @@ local function createMiniPanel()
     fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
     fpsLabel.TextColor3 = THEME.TEXT
 
-    -- =====================
-    -- PING
-    -- =====================
+    -- PING LABEL
     local pingLabel = Instance.new("TextLabel", panel)
     pingLabel.Position = UDim2.new(0, 12, 0, 34)
     pingLabel.Size = UDim2.new(1, -60, 0, 22)
@@ -326,21 +332,16 @@ local function createMiniPanel()
     pingLabel.TextXAlignment = Enum.TextXAlignment.Left
     pingLabel.TextColor3 = THEME.TEXT
 
-    -- =====================
-    -- LOGO (KANAN, CENTER)
-    -- =====================
+    -- LOGO
     local logo = Instance.new("ImageLabel", panel)
     logo.Size = UDim2.new(0, 26, 0, 26)
     logo.Position = UDim2.new(1, -38, 0.5, -13)
     logo.BackgroundTransparency = 1
     logo.Image = "rbxassetid://137263312772667"
     logo.ImageTransparency = 0.1
-
     Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 6)
 
-    -- =====================
-    -- DRAG (MOUSE + TOUCH)
-    -- =====================
+    -- DRAG
     do
         local dragging, dragStart, startPos
         panel.InputBegan:Connect(function(i)
@@ -374,6 +375,71 @@ local function createMiniPanel()
         FPS = fpsLabel,
         Ping = pingLabel,
     }
+end
+
+-- =========================
+-- PING FETCH
+-- =========================
+local function getPing()
+    local ping = 0
+    pcall(function()
+        local net = Stats:FindFirstChild("Network")
+        if net then
+            local s = net:FindFirstChild("ServerStatsItem")
+            if s and s:FindFirstChild("Data Ping") then
+                ping = tonumber(s["Data Ping"]:GetValueString():match("%d+")) or 0
+            end
+        end
+    end)
+    return ping
+end
+
+-- =========================
+-- PUBLIC TOGGLE
+-- =========================
+function VisualAPI.TogglePingPanel(state)
+    if state and not VisualAPI.PingPanel.Enabled then
+        VisualAPI.PingPanel.Enabled = true
+        VisualAPI.PingPanel.GUI = createMiniPanel()
+
+        local frames, fpsTimer, statTimer = 0, 0, 0
+
+        VisualAPI.PingPanel.Conn = RunService.Heartbeat:Connect(function(dt)
+            frames += 1
+            fpsTimer += dt
+            statTimer += dt
+
+            if fpsTimer >= 1 then
+                local fps = frames
+                frames = 0
+                fpsTimer = 0
+
+                VisualAPI.PingPanel.GUI.FPS.Text = "FPS  : " .. fps
+                colorizeFPS(VisualAPI.PingPanel.GUI.FPS, fps)
+            end
+
+            if statTimer >= 0.5 then
+                statTimer = 0
+                local ping = getPing()
+                VisualAPI.PingPanel.GUI.Ping.Text = "PING : " .. ping .. " ms"
+                colorizePing(VisualAPI.PingPanel.GUI.Ping, ping)
+            end
+        end)
+
+    elseif not state and VisualAPI.PingPanel.Enabled then
+        VisualAPI.PingPanel.Enabled = false
+
+        if VisualAPI.PingPanel.Conn then
+            VisualAPI.PingPanel.Conn:Disconnect()
+            VisualAPI.PingPanel.Conn = nil
+        end
+
+        if VisualAPI.PingPanel.GUI and VisualAPI.PingPanel.GUI.Gui then
+            VisualAPI.PingPanel.GUI.Gui:Destroy()
+        end
+
+        VisualAPI.PingPanel.GUI = nil
+    end
 end
 
 -- =========================

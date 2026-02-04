@@ -1,96 +1,131 @@
 -- =========================================================
--- AUTO FISHING BLATANT API (FIXED - NO FREEZE)
+-- AUTO FISHING BLATANT API (RAW LOGIC 1:1) - NO EQUIP
+-- ⚠️ DO NOT OPTIMIZE | DO NOT CLEAN
 -- =========================================================
 
 local BlatantAPI = {}
+
+-- ================= SERVICES =================
 local RS = game:GetService("ReplicatedStorage")
+
+-- ================= NET =================
 local Net = RS.Packages._Index["sleitnick_net@0.2.0"].net
 
 local RF_Charge   = Net["RF/ChargeFishingRod"]
 local RF_Start    = Net["RF/RequestFishingMinigameStarted"]
+--local RE_Complete = Net["RE/FishingCompleted"]
 local RF_Complete = Net["RF/CatchFishCompleted"]
-local RE_Equip    = Net["RE/EquipToolFromHotbar"]
+-- REMOVED: local RE_Equip    = Net["RE/EquipToolFromHotbar"]
 local RF_Cancel   = Net["RF/CancelFishingInputs"]
 local RF_Update   = Net["RF/UpdateAutoFishingState"]
+local RE_Update   = Net["RE/UpdateChargeState"]
 
+-- ================= CONTROLLER =================
 local FC = require(RS.Controllers.FishingController)
+
+-- ================= BACKUP ORIGINAL =================
 local originalClick  = FC.RequestFishingMinigameClick
 local originalCharge = FC.RequestChargeFishingRod
 
+-- ================= RAW CONFIG =================
 local Config = {
     Active = false,
-    Mode = "Old",
+    Mode = "Old",        -- Old / New
     CancelDelay = 0.90,
     CompleteDelay = 0.89,
     AutoPerfect = false,
 }
 
 local mainThread
+-- REMOVED: local equipThread
 
--- 🔧 Equip CUKUP 1x sebelum mulai mancing (bukan loop terus!)
-local function SafeEquipRod()
-    pcall(function()
-        RE_Equip:FireServer(1)  -- Equip slot 1
-        task.wait(0.15)         -- Delay stabil setelah equip
-    end)
+-- ======================================================
+-- 🔥 AUTO PERFECT (RAW)
+-- ======================================================
+local function SyncAutoPerfect()
+    local shouldEnable = Config.Active and Config.Mode == "New"
+
+    if shouldEnable then
+        if not Config.AutoPerfect then
+            Config.AutoPerfect = true
+
+            FC.RequestFishingMinigameClick = function() end
+            FC.RequestChargeFishingRod = function() end
+        end
+    else
+        if Config.AutoPerfect then
+            Config.AutoPerfect = false
+
+            pcall(function()
+                RF_Update:InvokeServer(false)
+            end)
+
+            FC.RequestFishingMinigameClick = originalClick
+            FC.RequestChargeFishingRod = originalCharge
+        end
+    end
 end
-
--- 🔄 CLEAN restart tiap loop (INI KUNCI BIAR GA FREEZE)
-local function DoFish_CLEAN()
-    -- 1. Pastikan state sebelumnya dibersihkan
-    pcall(RF_Cancel.InvokeServer, RF_Cancel)
-    task.wait(0.05)
-    
-    -- 2. Equip rod (cukup 1x per cast)
-    SafeEquipRod()
-    
-    -- 3. Mulai mancing
+-- ======================================================
+-- 🔥 RAW CORE FISH (NO SAFETY)
+-- ======================================================
+local function DoFish_RAW()
     task.spawn(function()
         pcall(function()
             local t = tick()
+            RF_Cancel:InvokeServer()
             RF_Charge:InvokeServer(math.huge)
             RF_Start:InvokeServer(-139.630, 0.996, t)
         end)
     end)
-    
-    -- 4. Tunggu lalu complete
-    task.wait(Config.CompleteDelay)
-    if Config.Active then
-        pcall(RF_Complete.InvokeServer, RF_Complete)
-    end
-    
-    -- 5. Delay antar cast (jangan terlalu cepat!)
-    task.wait(math.max(0.1, Config.CancelDelay - Config.CompleteDelay))
+
+    task.spawn(function()
+        task.wait(Config.CompleteDelay)
+        if Config.Active then
+            pcall(RF_Complete.InvokeServer, RF_Complete)
+        end
+    end)
 end
 
-local function FishingLoop_CLEAN()
+local function FishingLoop_RAW()
+    -- REMOVED: equipThread loop
     while Config.Active do
-        DoFish_CLEAN()
-        -- Optional: tambahkan jitter kecil biar lebih natural
-        task.wait(math.random() * 0.03)
+        DoFish_RAW()
+        task.wait(Config.CancelDelay)
     end
 end
 
--- ===== API =====
+-- ======================================================
+-- 🧠 PUBLIC API
+-- ======================================================
 function BlatantAPI.Start()
     if Config.Active then return end
     Config.Active = true
-    
+
+    SyncAutoPerfect()
+
     if mainThread then task.cancel(mainThread) end
-    mainThread = task.spawn(FishingLoop_CLEAN)
+    mainThread = task.spawn(FishingLoop_RAW)
 end
 
 function BlatantAPI.Stop()
     Config.Active = false
+
     if mainThread then
         task.cancel(mainThread)
         mainThread = nil
     end
+
+    -- REMOVED: equipThread cleanup
+
     pcall(RF_Cancel.InvokeServer, RF_Cancel)
+
+    FC.RequestFishingMinigameClick = originalClick
+    FC.RequestChargeFishingRod = originalCharge
 end
 
 function BlatantAPI.SetMode(mode)
     Config.Mode = mode
+    SyncAutoPerfect()
 end
 
 function BlatantAPI.SetDelay(cancel, complete)

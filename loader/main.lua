@@ -166,6 +166,119 @@ for _, tab in ipairs(UI_TABS) do
     end
 end
 
+---------------------------------------------------------------------
+-- === FLOATING MOBILE BUTTON (PETAK, CORNER LEMBUT) ===
+---------------------------------------------------------------------
+ 
+local Players = game:GetService("Players")
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+ 
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "NYX_FloatingBtn"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+ 
+local btn = Instance.new("ImageButton")
+btn.Name = "NYXButton"
+btn.Size = UDim2.new(0, 70, 0, 70)
+ 
+-- ===========================
+-- POSISI TENGAH LAYAR KANAN
+-- ===========================
+btn.AnchorPoint = Vector2.new(0.5, 0.5)
+btn.Position = UDim2.new(0.95, 0, 0.50, 0)
+ 
+btn.BackgroundColor3 = Color3.fromRGB(90, 0, 170)
+btn.Image = "rbxassetid://137263312772667"
+btn.BorderSizePixel = 0
+btn.Visible = true
+btn.Parent = screenGui
+ 
+local corner = Instance.new("UICorner", btn)
+corner.CornerRadius = UDim.new(0, 10)
+ 
+local stroke = Instance.new("UIStroke", btn)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(255, 0, 255)
+ 
+---------------------------------------------------------------------
+-- === DRAG SUPPORT ===
+---------------------------------------------------------------------
+ 
+local UIS = game:GetService("UserInputService")
+local dragging = false
+local dragStart, startPos
+ 
+btn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = btn.Position
+    end
+end)
+ 
+btn.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.Touch or
+        input.UserInputType == Enum.UserInputType.MouseMovement
+    ) then
+        local delta = input.Position - dragStart
+ 
+        btn.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+ 
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+ 
+---------------------------------------------------------------------
+-- === PERFECT TOGGLE DOKUMENTASI RESMI ===
+---------------------------------------------------------------------
+ 
+btn.MouseButton1Click:Connect(function()
+    Window:Toggle()
+end)
+ 
+---------------------------------------------------------------------
+-- === SINKRON DENGAN X BUTTON ===
+---------------------------------------------------------------------
+ 
+-- Jika Window ditutup (X biasa / close)
+Window:OnClose(function()
+    btn.Visible = true   -- tetap tampil
+end)
+ 
+-- Jika Window dibuka
+Window:OnOpen(function()
+    btn.Visible = true
+end)
+ 
+-- Jika Window dihancurkan (Destroy)
+Window:OnDestroy(function()
+    print("Window Destroyed")
+ 
+    -- Hancurkan tombol mobile
+    if btn then
+        btn:Destroy()
+    end
+ 
+    -- Hancurkan ScreenGui juga biar clean
+    if screenGui then
+        screenGui:Destroy()
+    end
+end)
+
 -- =================================================
 -- READY
 -- =================================================

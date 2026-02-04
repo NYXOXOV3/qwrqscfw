@@ -31,7 +31,7 @@ AreaAPI.FishingAreas = {
     ["Treasure Room"] = {Pos = Vector3.new(-3598.440, -281.274, -1645.855), Look = Vector3.new(-0.065, 0, -0.998)},
     ["Tropical Grove"] = {Pos = Vector3.new(-2162.920, 2.825, 3638.445), Look = Vector3.new(0.381, 0, 0.925)},
     ["Underground Cellar"] = {Pos = Vector3.new(2118.417, -91.448, -733.800), Look = Vector3.new(0.854, 0, 0.521)},
-    ["Volcanic Cavern"] = {Pos = Vector3.new(1146.005, 74.569, -10232.295), Look = Vector3.new(0.1295, -0.9579, 0.2562)},
+    ["Volcanic Cavern"] = {Pos = Vector3.new(1155.616, 79.856, -10249.429), Look = Vector3.new(-0.6648, -0.7421, 0.0856)},
     ["Weather Machine"] = {Pos = Vector3.new(-1518.550, 2.875, 1916.148), Look = Vector3.new(0.042, 0, 0.999)},
 }
 

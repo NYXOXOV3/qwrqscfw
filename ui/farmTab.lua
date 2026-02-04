@@ -1,6 +1,5 @@
 -- =========================================================
 -- NYXHUB FARM TAB
--- MODE: AUTO FISHING (3 Instant Modes)
 -- =========================================================
 
 if not _G.NYXHUB or not _G.NYXHUB.Window then
@@ -27,46 +26,46 @@ if not BlatantAPI then
     warn("[NYXHUB][FarmTab] BlatantAPI not loaded.")
     return
 end
-local Legit1API = _G.NYXHUB.Modules["farm/legit1API.lua"]
-if not Legit1API then
-    warn("[NYXHUB][FarmTab] Legit1API not loaded.")
-    return
-end
-local PerfectAPI = _G.NYXHUB.Modules["farm/legit2API.lua"]
-if not PerfectAPI then
-    warn("[FarmTab] InstantPerfectAPI not loaded")
-    return
-end
-local BlatantV1 = _G.NYXHUB.Modules["farm/blatant1API.lua"]
-if not BlatantV1 then
-    warn("[FarmTab] BlatantV1 not loaded")
-    return
-end
-local BlatantV2 = _G.NYXHUB.Modules["farm/blatant2API.lua"]
-if not BlatantV2 then
-    warn("[FarmTab] BlatantV2 API not loaded")
-    return
-end
-local BlatantV3FixAPI = _G.NYXHUB.Modules["farm/blatant3API.lua"]
-if not BlatantV3FixAPI then
-    warn("[FarmTab] BlatantV3FixAPI API not loaded")
-    return
-end
-local BlatantV4 = _G.NYXHUB.Modules["farm/blatant4API.lua"]
-if not BlatantV4 then
-    warn("[FarmTab] BlatantV4 API not loaded")
-    return
-end
-local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
-if not BlatantV5 then
-    warn("[FarmTab] BlatantV5 API not loaded")
-    return
-end
-local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
-if not BlatantV6 then
-    warn("[FarmTab] BlatantV6 API not loaded")
-    return
-end
+--local Legit1API = _G.NYXHUB.Modules["farm/legit1API.lua"]
+--if not Legit1API then
+--    warn("[NYXHUB][FarmTab] Legit1API not loaded.")
+--    return
+--end
+--local PerfectAPI = _G.NYXHUB.Modules["farm/legit2API.lua"]
+--if not PerfectAPI then
+--    warn("[FarmTab] InstantPerfectAPI not loaded")
+--    return
+--end
+--local BlatantV1 = _G.NYXHUB.Modules["farm/blatant1API.lua"]
+--if not BlatantV1 then
+--    warn("[FarmTab] BlatantV1 not loaded")
+--    return
+---end
+--local BlatantV2 = _G.NYXHUB.Modules["farm/blatant2API.lua"]
+--if not BlatantV2 then
+--    warn("[FarmTab] BlatantV2 API not loaded")
+--    return
+--end
+--local BlatantV3FixAPI = _G.NYXHUB.Modules["farm/blatant3API.lua"]
+--if not BlatantV3FixAPI then
+--    warn("[FarmTab] BlatantV3FixAPI API not loaded")
+--    return
+--end
+--local BlatantV4 = _G.NYXHUB.Modules["farm/blatant4API.lua"]
+--if not BlatantV4 then
+--    warn("[FarmTab] BlatantV4 API not loaded")
+--    return
+--end
+--local BlatantV5 = _G.NYXHUB.Modules["farm/blatant5API.lua"]
+--if not BlatantV5 then
+--    warn("[FarmTab] BlatantV5 API not loaded")
+--    return
+--end
+--local BlatantV6 = _G.NYXHUB.Modules["farm/blatant6API.lua"]
+--if not BlatantV6 then
+--    warn("[FarmTab] BlatantV6 API not loaded")
+--    return
+--end
 local AreaAPI = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
 if not AreaAPI then
     warn("[FarmTab] AreaPositionAPI not loaded")
@@ -88,6 +87,9 @@ local farm = Window:Tab({
     Icon = "fish",
 })
 
+-- =========================================================
+-- NYXHUB AUTO CLICK SECTION
+-- =========================================================
 local auto = farm:Section({ Title = "Auto Click" })
 
 auto:Slider({
@@ -106,6 +108,10 @@ auto:Toggle({
     end
 })
 auto:Divider()
+
+-- =========================================================
+-- NYXHUB LEGIT SECTION
+-- =========================================================
 local legit = farm:Section({ Title = "Legit"})     
 
 legit:Slider({
@@ -124,6 +130,8 @@ legit:Toggle({
     end
 })
 legit:Divider()
+
+--[[
 local legit1  = farm:Section({ Title = "Legit Fast" })
 
 legit1:Input({
@@ -193,7 +201,11 @@ legit2:Toggle({
         end
     end
 })
-legit2:Divider()
+legit2:Divider()]]--
+
+-- =========================================================
+-- NYXHUB BLATANT NEW SECTION
+-- =========================================================
 local blatant = farm:Section({ Title = "Blatant Beta (New)" })
 
 blatant:Toggle({
@@ -224,6 +236,7 @@ blatant:Input({
 })
 blatant:Divider()
 
+--[[
 local blatantbt = farm:Section({ Title = "Blatant Beta" })
 
 -- ===============================
@@ -729,9 +742,11 @@ blatantv6:Button({
         })
     end
 })
+]]--
 
-
-
+-- =========================================================
+-- NYXHUB AREA SECTION
+-- =========================================================
 local areafish = farm:Section({ Title = "Farm Area" })
 
 -- DROPDOWN
@@ -783,6 +798,10 @@ areafish:Button({
     end
 })
 areafish:Divider()
+
+-- =========================================================
+-- NYXHUB SKIN ANIMATION SECTION
+-- =========================================================
 local skinSec = farm:Section({ Title = "Skin Animation" })
 
 local skins = SkinAPI.GetSkins()
@@ -816,7 +835,7 @@ skinSec:Toggle({
 -- =========================================================
 -- STOP ALL FARM BUTTON (PANIC BUTTON)
 -- =========================================================
-
+--[[
 farm:Button({
     Title = "🛑 STOP ALL FARMING",
     Callback = function()
@@ -852,3 +871,4 @@ farm:Button({
         })
     end
 })
+]]--

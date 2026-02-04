@@ -1,15 +1,16 @@
 -- =========================================================
--- NYXHUB AUTOMATIC TAB (AUTO SELL UI)
+-- NYXHUB AUTOMATIC TAB (AUTO SELL - MODULE COMPAT)
 -- =========================================================
 
 if not _G.NYXHUB or not _G.NYXHUB.Window then return end
 
 local Window = _G.NYXHUB.Window
 local WindUI = _G.NYXHUB.WindUI
-local AutoSellAPI = _G.NYXHUB.Modules["automatic/autosellAPI.lua"]
 
-if not AutoSellAPI then
-    warn("[AutomaticTab] AutoSellAPI not found")
+-- ⬇️ AMBIL DARI MODULE LOADER (BENAR)
+local AutoSell = _G.NYXHUB.Modules["automatic/autosellAPI.lua"]
+if not AutoSell then
+    warn("[AutomaticTab] autosellAPI.lua not loaded")
     return
 end
 
@@ -22,54 +23,98 @@ local sellSec = automatic:Section({
     Title = "Auto Sell Fish"
 })
 
--- ================= METHOD DROPDOWN =================
-local valueInput
+-- =========================
+-- UI STATE
+-- =========================
+local mode = "Delay"   -- Delay | Count
+local value = 50
+local running = false
 
+-- =========================
+-- METHOD
+-- =========================
 sellSec:Dropdown({
     Title = "Method",
     Values = { "Delay", "Count" },
     Value = "Delay",
     Callback = function(v)
-        AutoSellAPI.SetMethod(v)
-
-        if valueInput then
-            if v == "Delay" then
-                valueInput:SetTitle("Sell Delay (Seconds)")
-                valueInput:SetPlaceholder("e.g. 50")
-            else
-                valueInput:SetTitle("Sell at Fish Count")
-                valueInput:SetPlaceholder("e.g. 100")
-            end
+        mode = v
+        if v == "Delay" then
+            valueInput:SetTitle("Sell Delay (Seconds)")
+            valueInput:SetPlaceholder("e.g. 5")
+        else
+            valueInput:SetTitle("Sell at Fish Count")
+            valueInput:SetPlaceholder("e.g. 200")
         end
     end
 })
 
--- ================= VALUE INPUT =================
+-- =========================
+-- VALUE
+-- =========================
 valueInput = sellSec:Input({
     Title = "Sell Delay (Seconds)",
-    Placeholder = "50",
-    Default = "50",
+    Placeholder = "5",
+    Default = "5",
     Callback = function(v)
-        AutoSellAPI.SetValue(v)
+        local n = tonumber(v)
+        if n and n > 0 then
+            value = n
+        end
     end
 })
 
 sellSec:Divider()
 
--- ================= TOGGLE =================
+-- =========================
+-- SELL ONCE
+-- =========================
+sellSec:Button({
+    Title = "Sell Now",
+    Callback = function()
+        AutoSell.SellOnce()
+        WindUI:Notify({
+            Title = "Sell",
+            Content = "Sell request sent",
+            Duration = 1.5,
+            Icon = "check"
+        })
+    end
+})
+
+sellSec:Divider()
+
+-- =========================
+-- AUTO SELL TOGGLE
+-- =========================
 sellSec:Toggle({
     Title = "Enable Auto Sell",
     Callback = function(state)
         if state then
-            AutoSellAPI.Start()
+            if running then return end
+            running = true
+
+            -- SAFETY: STOP BOTH
+            AutoSell.Timer.Stop()
+            AutoSell.Count.Stop()
+
+            if mode == "Delay" then
+                AutoSell.Timer.Start(value)
+            else
+                AutoSell.Count.Start(value)
+            end
+
             WindUI:Notify({
                 Title = "Auto Sell ON",
-                Content = AutoSellAPI.Method .. " : " .. tostring(AutoSellAPI.Value),
+                Content = mode .. " : " .. tostring(value),
                 Duration = 2,
                 Icon = "check"
             })
         else
-            AutoSellAPI.Stop()
+            running = false
+            AutoSell.Timer.Stop()
+            AutoSell.Count.Stop()
+
             WindUI:Notify({
                 Title = "Auto Sell OFF",
                 Duration = 2,
@@ -78,4 +123,3 @@ sellSec:Toggle({
         end
     end
 })
-

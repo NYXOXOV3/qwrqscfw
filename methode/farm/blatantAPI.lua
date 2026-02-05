@@ -1,6 +1,6 @@
 -- =========================================================
 -- AUTO FISHING BLATANT API (RAW LOGIC 1:1) - NO EQUIP
--- ⚠️ DO NOT OPTIMIZE | DO NOT CLEAN
+-- ⚠️ NO PCALL | NO SAFETY | DO NOT OPTIMIZE
 -- =========================================================
 
 local BlatantAPI = {}
@@ -13,9 +13,7 @@ local Net = RS.Packages._Index["sleitnick_net@0.2.0"].net
 
 local RF_Charge   = Net["RF/ChargeFishingRod"]
 local RF_Start    = Net["RF/RequestFishingMinigameStarted"]
---local RE_Complete = Net["RE/FishingCompleted"]
 local RF_Complete = Net["RF/CatchFishCompleted"]
--- REMOVED: local RE_Equip    = Net["RE/EquipToolFromHotbar"]
 local RF_Cancel   = Net["RF/CancelFishingInputs"]
 local RF_Update   = Net["RF/UpdateAutoFishingState"]
 local RE_Update   = Net["RE/UpdateChargeState"]
@@ -30,17 +28,16 @@ local originalCharge = FC.RequestChargeFishingRod
 -- ================= RAW CONFIG =================
 local Config = {
     Active = false,
-    Mode = "Old",        -- Old / New
+    Mode = "New", -- Old / New
     CancelDelay = 0.94,
     CompleteDelay = 0.83,
     AutoPerfect = false,
 }
 
 local mainThread
--- REMOVED: local equipThread
 
 -- ======================================================
--- 🔥 AUTO PERFECT (RAW)
+-- 🔥 AUTO PERFECT (RAW - NO PCALL)
 -- ======================================================
 local function SyncAutoPerfect()
     local shouldEnable = Config.Active and Config.Mode == "New"
@@ -56,38 +53,34 @@ local function SyncAutoPerfect()
         if Config.AutoPerfect then
             Config.AutoPerfect = false
 
-            pcall(function()
-                RF_Update:InvokeServer(false)
-            end)
+            RF_Update:InvokeServer(true)
 
             FC.RequestFishingMinigameClick = originalClick
             FC.RequestChargeFishingRod = originalCharge
         end
     end
 end
+
 -- ======================================================
--- 🔥 RAW CORE FISH (NO SAFETY)
+-- 🔥 RAW CORE FISH (FULL BRUTAL)
 -- ======================================================
 local function DoFish_RAW()
     task.spawn(function()
-        pcall(function()
-            local t = tick()
-            RF_Cancel:InvokeServer()
-            RF_Charge:InvokeServer(math.huge)
-            RF_Start:InvokeServer(-139.630, 0.996, t)
-        end)
+        local t = tick()
+        RF_Cancel:InvokeServer()
+        RF_Charge:InvokeServer(math.huge)
+        RF_Start:InvokeServer(-139.630, 0.996, t)
     end)
 
     task.spawn(function()
         task.wait(Config.CompleteDelay)
         if Config.Active then
-            pcall(RF_Complete.InvokeServer, RF_Complete)
+            RF_Complete:InvokeServer()
         end
     end)
 end
 
 local function FishingLoop_RAW()
-    -- REMOVED: equipThread loop
     while Config.Active do
         DoFish_RAW()
         task.wait(Config.CancelDelay)
@@ -103,7 +96,10 @@ function BlatantAPI.Start()
 
     SyncAutoPerfect()
 
-    if mainThread then task.cancel(mainThread) end
+    if mainThread then
+        task.cancel(mainThread)
+    end
+
     mainThread = task.spawn(FishingLoop_RAW)
 end
 
@@ -115,9 +111,7 @@ function BlatantAPI.Stop()
         mainThread = nil
     end
 
-    -- REMOVED: equipThread cleanup
-
-    pcall(RF_Cancel.InvokeServer, RF_Cancel)
+    RF_Cancel:InvokeServer()
 
     FC.RequestFishingMinigameClick = originalClick
     FC.RequestChargeFishingRod = originalCharge

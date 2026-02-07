@@ -83,7 +83,7 @@ local METHOD_LIST = {
     --"setting/resetAPI.lua",
 
     "farm/autoclickAPI.lua",
-    --"farm/blatantv1.lua",
+    "farm/blatantv1.lua",
     "farm/legitAPI.lua",
     --"farm/legit1API.lua",
     --"farm/legit2API.lua",

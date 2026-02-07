@@ -44,7 +44,9 @@ local busy = false
 local function LockController()
     if controllerLocked then return end
     controllerLocked = true
-
+    RF_Cancel:InvokeServer()
+    RF_Update:InvokeServer(true)
+    task.wait(0.1)
     FC.RequestFishingMinigameClick = function() end
     FC.RequestChargeFishingRod     = function() end
 end
@@ -54,7 +56,7 @@ local function RestoreController()
     controllerLocked = false
 
     RF_Cancel:InvokeServer()
-    RF_Update:InvokeServer(true)
+    RF_Update:InvokeServer(false)
     task.wait(0.1)
 
     FC.RequestFishingMinigameClick = originalClick
@@ -70,14 +72,15 @@ local function DoFishCycle()
 
     -- reset state
     RF_Cancel:InvokeServer()
-    task.wait(0.02)
 
     -- 🔥 SPAM CHARGE + START (SEQUENTIAL, NOT SPAWN)
     for i = 1, BlatantBeta.Settings.SpamCount do
         if not BlatantBeta.Settings.Active then break end
 
-        RF_Charge:InvokeServer(math.huge)
-        RF_Start:InvokeServer(-1, 0, os.clock())
+        --task.spawn(function()
+            RF_Charge:InvokeServer(math.huge)
+            RF_Start:InvokeServer(-1, 0, tick())
+       -- end)
 
         task.wait(BlatantBeta.Settings.CastDelay)
     end

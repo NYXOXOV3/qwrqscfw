@@ -29,8 +29,8 @@ local BlatantBeta = {}
 -- ================= CONFIG =================
 BlatantBeta.Settings = {
     Active        = false,
-    CastDelay     = 0.08, -- jeda antar spam charge+start
-    CompleteDelay = 0.85, -- jeda sebelum complete
+    CastDelay     = 0.05, -- jeda antar spam charge+start
+    CompleteDelay = 0.88, -- jeda sebelum complete
     SpamCount     = 7
 }
 

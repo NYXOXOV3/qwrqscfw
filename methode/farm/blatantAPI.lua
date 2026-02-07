@@ -7,7 +7,8 @@ local BlatantAPI = {}
 
 -- ================= SERVICES =================
 local RS = game:GetService("ReplicatedStorage")
-
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 -- ================= NET =================
 local Net = RS.Packages._Index["sleitnick_net@0.2.0"].net
 

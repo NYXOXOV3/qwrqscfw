@@ -76,11 +76,11 @@ if not SkinAPI then
     warn("[FarmTab] SkinAnimationAPI not loaded")
     return
 end
---local BlatantBeta = _G.NYXHUB.Modules["farm/blatantv1.lua"]
---if not BlatantBeta then
---    warn("[FarmTab] BlatantBeta not loaded")
---    return
---end
+local BlatantBeta = _G.NYXHUB.Modules["farm/blatantv1.lua"]
+if not BlatantBeta then
+    warn("[FarmTab] BlatantBeta not loaded")
+    return
+end
 
 local farm = Window:Tab({
     Title = "Fishing",
@@ -236,89 +236,51 @@ blatant:Input({
 })
 blatant:Divider()
 
---[[
-local blatantbt = farm:Section({ Title = "Blatant Beta" })
+-- =========================================================
+-- NYXHUB BLATANT BETA V1 NEW SECTION
+-- =========================================================
+local blatantbetav1 = farm:Section({ Title = "Blatant V1" })
 
--- ===============================
--- COMPLETE DELAY INPUT
--- ===============================
-blatantbt:Input({
+blatantbetav1:Toggle({
+    Title = "Blatant V1",
+    Callback = function(v)
+        LegitAPI.Stop()
+        AutoClickAPI.Stop()
+        BlatantAPI.Stop()
+        if v then BlatantBeta.Start() else BlatantBeta.Stop() end
+    end
+})
+
+blatantbetav1:Input({
+    Title = "Cast Delay",
+    Default = "0.05",
+    Placeholder = "0.05",
+    Callback = function(v)
+        BlatantBeta.UpdateSettings(tonumber(v), nil)
+    end
+})
+
+blatantbetav1:Input({
     Title = "Complete Delay",
-    Placeholder = "0.001",
-    Default = tostring(BlatantBeta.Settings.CompleteDelay),
+    Default = "0.88",
+    Placeholder = "0.88",
     Callback = function(v)
-        local n = tonumber(v)
-        if n and n >= 0 then
-            BlatantBeta.UpdateSettings(n, nil)
-        end
+        BlatantBeta.UpdateSettings(nil, tonumber(v), nil)
     end
 })
 
--- ===============================
--- CANCEL DELAY INPUT
--- ===============================
-blatantbt:Input({
-    Title = "Cancel Delay",
-    Placeholder = "0.001",
-    Default = tostring(BlatantBeta.Settings.CancelDelay),
+
+blatantbetav1:Input({
+    Title = "Spam Count",
+    Default = "7",
+    Placeholder = "7",
     Callback = function(v)
-        local n = tonumber(v)
-        if n and n >= 0 then
-            BlatantBeta.UpdateSettings(nil, n)
-        end
+        BlatantBeta.UpdateSettings(nil, nil, tonumber(v))
     end
 })
+blatantbetav1:Divider()
+--[[
 
--- ===============================
--- TOGGLE
--- ===============================
-blatantbt:Toggle({
-    Title = "Enable Ultra Blatant Fishing",
-    Value = false,
-    Callback = function(state)
-
-        -- 🛑 MATIKAN MODE LAIN (ANTI TABRAKAN)
-        if _G.NYXHUB.Modules["farm/autoclickAPI.lua"] then
-            _G.NYXHUB.Modules["farm/autoclickAPI.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/legitAPI.lua"] then
-            _G.NYXHUB.Modules["farm/legitAPI.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/legit1API.lua"] then
-            _G.NYXHUB.Modules["farm/legit1API.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/legit2API.lua"] then
-            _G.NYXHUB.Modules["farm/legit2API.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/blatantAPI.lua"] then
-            _G.NYXHUB.Modules["farm/blatantAPI.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/blatant2API.lua"] then
-            _G.NYXHUB.Modules["farm/blatant2API.lua"].Stop()
-        end
-        if _G.NYXHUB.Modules["farm/blatant3API.lua"] then
-            _G.NYXHUB.Modules["farm/blatant3API.lua"].Stop()
-        end
-
-        -- ▶️ ULTRA BLATANT CONTROL
-        if state then
-            BlatantBeta.Start()
-            _G.NYXHUB.WindUI:Notify({
-                Title = "Ultra Blatant ON",
-                Duration = 2,
-                Icon = "zap"
-            })
-        else
-            BlatantBeta.Stop()
-            _G.NYXHUB.WindUI:Notify({
-                Title = "Ultra Blatant OFF",
-                Duration = 2,
-                Icon = "x"
-            })
-        end
-    end
-})
-blatantbt:Divider()
 local blatantv1 = farm:Section({ Title = "Blatant V1" })
 
 blatantv1:Input({

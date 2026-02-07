@@ -31,6 +31,7 @@ local Config = {
     Mode = "New", -- Old / New
     CancelDelay = 0.94,
     CompleteDelay = 0.83,
+    SpamCount = 7,
     AutoPerfect = false,
 }
 
@@ -39,38 +40,42 @@ local mainThread
 -- ======================================================
 -- 🔥 AUTO PERFECT (RAW - NO PCALL)
 -- ======================================================
-local function SyncAutoPerfect()
-    local shouldEnable = Config.Active and Config.Mode == "New"
+local function LockController()
+    if controllerLocked then return end
+    controllerLocked = true
 
-    if shouldEnable then
-        if not Config.AutoPerfect then
-            Config.AutoPerfect = true
+    RF_Cancel:InvokeServer()
+    RF_Update:InvokeServer(true)
+    task.wait(0.05)
 
-            FC.RequestFishingMinigameClick = function() end
-            FC.RequestChargeFishingRod = function() end
-        end
-    else
-        if Config.AutoPerfect then
-            Config.AutoPerfect = false
+    FC.RequestFishingMinigameClick = function() end
+    FC.RequestChargeFishingRod     = function() end
+end
 
-            RF_Update:InvokeServer(true)
+local function RestoreController()
+    if not controllerLocked then return end
+    controllerLocked = false
 
-            FC.RequestFishingMinigameClick = originalClick
-            FC.RequestChargeFishingRod = originalCharge
-        end
-    end
+    RF_Cancel:InvokeServer()
+    RF_Update:InvokeServer(false)
+    task.wait(0.05)
+
+    FC.RequestFishingMinigameClick = originalClick
+    FC.RequestChargeFishingRod     = originalCharge
 end
 
 -- ======================================================
 -- 🔥 RAW CORE FISH (FULL BRUTAL)
 -- ======================================================
 local function DoFish_RAW()
-    task.spawn(function()
-        local t = tick()
-        RF_Cancel:InvokeServer()
-        RF_Charge:InvokeServer(math.huge)
-        RF_Start:InvokeServer(-139.630, 0.996, t)
-    end)
+    RF_Cancel:InvokeServer()
+    for i = 1, Config.SpamCount do
+        task.spawn(function()
+            local t = tick()
+            RF_Charge:InvokeServer(math.huge)
+            RF_Start:InvokeServer(-139.630, 0.996, t)
+        end)
+    end
 
     task.spawn(function()
         task.wait(Config.CompleteDelay)
@@ -80,12 +85,6 @@ local function DoFish_RAW()
     end)
 end
 
-local function FishingLoop_RAW()
-    while Config.Active do
-        DoFish_RAW()
-        task.wait(Config.CancelDelay)
-    end
-end
 
 -- ======================================================
 -- 🧠 PUBLIC API

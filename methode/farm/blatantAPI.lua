@@ -69,12 +69,14 @@ end
 -- 🔥 RAW CORE FISH (FULL BRUTAL)
 -- ======================================================
 local function DoFish_RAW()
-    task.spawn(function()
-        local t = tick()
-        RF_Cancel:InvokeServer()
-        RF_Charge:InvokeServer(math.huge)
-        RF_Start:InvokeServer(-139.630, 0.996, t)
-    end)
+    RF_Cancel:InvokeServer()
+    for i = 1, Config.SpamCount do
+        task.spawn(function()
+            local t = tick()
+            RF_Charge:InvokeServer(math.huge)
+            RF_Start:InvokeServer(-139.630, 0.996, t)
+        end)
+    end
 
     task.spawn(function()
         task.wait(Config.CompleteDelay)

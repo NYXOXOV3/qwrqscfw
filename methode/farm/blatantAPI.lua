@@ -68,14 +68,12 @@ end
 -- 🔥 RAW CORE FISH (FULL BRUTAL)
 -- ======================================================
 local function DoFish_RAW()
-    RF_Cancel:InvokeServer()
-    for i = 1, Config.SpamCount do
-        task.spawn(function()
-            local t = tick()
-            RF_Charge:InvokeServer(math.huge)
-            RF_Start:InvokeServer(-139.630, 0.996, t)
-        end)
-    end
+    task.spawn(function()
+        local t = tick()
+        RF_Cancel:InvokeServer()
+        RF_Charge:InvokeServer(math.huge)
+        RF_Start:InvokeServer(-139.630, 0.996, t)
+    end)
 
     task.spawn(function()
         task.wait(Config.CompleteDelay)
@@ -85,6 +83,12 @@ local function DoFish_RAW()
     end)
 end
 
+local function FishingLoop_RAW()
+    while Config.Active do
+        DoFish_RAW()
+        task.wait(Config.CancelDelay)
+    end
+end
 
 -- ======================================================
 -- 🧠 PUBLIC API
@@ -93,7 +97,7 @@ function BlatantAPI.Start()
     if Config.Active then return end
     Config.Active = true
 
-    SyncAutoPerfect()
+    LockController()
 
     if mainThread then
         task.cancel(mainThread)
@@ -104,7 +108,7 @@ end
 
 function BlatantAPI.Stop()
     Config.Active = false
-
+    RestoreController()
     if mainThread then
         task.cancel(mainThread)
         mainThread = nil

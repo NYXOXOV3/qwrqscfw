@@ -1,130 +1,129 @@
--- ⚠️ BLATANT V2 AUTO FISHING - CLEAN VERSION
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- ======================================================
+-- AUTO FISHING BLATANT (7x CAST → 1x COMPLETE)
+-- CLEAN + STABLE VERSION
+-- ======================================================
+
+-- ================= SERVICES =================
+local RS      = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local player  = Players.LocalPlayer
 
--- Network initialization
-local netFolder = ReplicatedStorage
-    :WaitForChild("Packages")
-    :WaitForChild("_Index")
-    :WaitForChild("sleitnick_net@0.2.0")
-    :WaitForChild("net")
+-- ================= NET =================
+local Net = RS.Packages._Index["sleitnick_net@0.2.0"].net
 
-local RF_ChargeFishingRod = netFolder:WaitForChild("RF/ChargeFishingRod")
-local RF_RequestMinigame = netFolder:WaitForChild("RF/RequestFishingMinigameStarted")
-local RF_CancelFishingInputs = netFolder:WaitForChild("RF/CancelFishingInputs")
-local RF_UpdateAutoFishingState = netFolder:WaitForChild("RF/UpdateAutoFishingState")
---local RE_FishingCompleted = netFolder:WaitForChild("RE/FishingCompleted")
-local RF_FishingCompleted = netFolder:WaitForChild("RF/CatchFishCompleted")
-local RE_MinigameChanged = netFolder:WaitForChild("RE/FishingMinigameChanged")
+local RF_Charge   = Net["RF/ChargeFishingRod"]
+local RF_Start    = Net["RF/RequestFishingMinigameStarted"]
+local RF_Complete = Net["RF/CatchFishCompleted"]
+local RF_Cancel   = Net["RF/CancelFishingInputs"]
+local RF_Update   = Net["RF/UpdateAutoFishingState"]
 
--- Module table
+-- ================= CONTROLLER =================
+local FC = require(RS.Controllers.FishingController)
+
+local originalClick  = FC.RequestFishingMinigameClick
+local originalCharge = FC.RequestChargeFishingRod
+
+-- ================= MODULE =================
 local BlatantBeta = {}
-BlatantBeta.Active = false
 
--- Settings
+-- ================= CONFIG =================
 BlatantBeta.Settings = {
-    ChargeDelay = 0.001,
-    CompleteDelay = 0.001,
-    CancelDelay = 0.001
+    Active        = false,
+    CastDelay     = 0.08, -- jeda antar spam charge+start
+    CompleteDelay = 0.85, -- jeda sebelum complete
+    SpamCount     = 7
 }
 
-----------------------------------------------------------------
--- CORE FISHING FUNCTIONS
-----------------------------------------------------------------
+-- ================= STATE =================
+local controllerLocked = false
+local busy = false
 
-local function safeFire(func)
-    task.spawn(function()
-        pcall(func)
-    end)
+-- ======================================================
+-- CONTROLLER LOCK / RESTORE
+-- ======================================================
+local function LockController()
+    if controllerLocked then return end
+    controllerLocked = true
+
+    FC.RequestFishingMinigameClick = function() end
+    FC.RequestChargeFishingRod     = function() end
 end
 
-local function ultraSpamLoop()
-    while BlatantBeta.Active do
-        local startTime = tick()
-        
-        safeFire(function()
-            RF_ChargeFishingRod:InvokeServer({[1] = startTime})
-        end)
-        
-        task.wait(BlatantBeta.Settings.ChargeDelay)
-        
-        local releaseTime = tick()
-        safeFire(function()
-            RF_RequestMinigame:InvokeServer(1, 0, releaseTime)
-        end)
-        
-        task.wait(BlatantBeta.Settings.CompleteDelay)
-        
-        safeFire(function()
-            RF_FishingCompleted:InvokeServer()
-        end)
-        
-        task.wait(BlatantBeta.Settings.CancelDelay)
-        safeFire(function()
-            RF_CancelFishingInputs:InvokeServer()
-        end)
+local function RestoreController()
+    if not controllerLocked then return end
+    controllerLocked = false
+
+    RF_Cancel:InvokeServer()
+    RF_Update:InvokeServer(true)
+    task.wait(0.1)
+
+    FC.RequestFishingMinigameClick = originalClick
+    FC.RequestChargeFishingRod     = originalCharge
+end
+
+-- ======================================================
+-- CORE FISH LOGIC
+-- ======================================================
+local function DoFishCycle()
+    if busy or not BlatantBeta.Settings.Active then return end
+    busy = true
+
+    -- reset state
+    RF_Cancel:InvokeServer()
+    task.wait(0.02)
+
+    -- 🔥 SPAM CHARGE + START (SEQUENTIAL, NOT SPAWN)
+    for i = 1, BlatantBeta.Settings.SpamCount do
+        if not BlatantBeta.Settings.Active then break end
+
+        RF_Charge:InvokeServer(math.huge)
+        RF_Start:InvokeServer(-1, 0, os.clock())
+
+        task.wait(BlatantBeta.Settings.CastDelay)
     end
+
+    -- ⏱ COMPLETE ONCE
+    task.delay(BlatantBeta.Settings.CompleteDelay, function()
+        if BlatantBeta.Settings.Active then
+            RF_Complete:InvokeServer()
+        end
+        busy = false
+    end)
 end
 
-RE_MinigameChanged.OnClientEvent:Connect(function(state)
-    if not BlatantBeta.Active then return end
-    
-    task.spawn(function()
-        task.wait(BlatantBeta.Settings.CompleteDelay)
-        
-        safeFire(function()
-            RF_FishingCompleted:InvokeServer()
-        end)
-        
-        task.wait(BlatantBeta.Settings.CancelDelay)
-        safeFire(function()
-            RF_CancelFishingInputs:InvokeServer()
-        end)
-    end)
+-- ======================================================
+-- MAIN LOOP
+-- ======================================================
+task.spawn(function()
+    while true do
+        if BlatantBeta.Settings.Active then
+            DoFishCycle()
+        end
+        task.wait(0.01)
+    end
 end)
 
-----------------------------------------------------------------
+-- ======================================================
 -- PUBLIC API
-----------------------------------------------------------------
-
--- Update Settings function
-function BlatantBeta.UpdateSettings(completeDelay, cancelDelay)
-    if completeDelay ~= nil then
-        BlatantBeta.Settings.CompleteDelay = completeDelay
-    end
-    
-    if cancelDelay ~= nil then
-        BlatantBeta.Settings.CancelDelay = cancelDelay
-    end
+-- ======================================================
+function BlatantBeta.UpdateSettings(castDelay, completeDelay, spamCount)
+    if castDelay     ~= nil then BlatantBeta.Settings.CastDelay     = castDelay end
+    if completeDelay ~= nil then BlatantBeta.Settings.CompleteDelay = completeDelay end
+    if spamCount     ~= nil then BlatantBeta.Settings.SpamCount     = spamCount end
 end
 
--- Start function
 function BlatantBeta.Start()
-    if BlatantBeta.Active then 
-        return
-    end
-    
-    BlatantBeta.Active = true
-    task.spawn(ultraSpamLoop)
+    if BlatantBeta.Settings.Active then return end
+
+    BlatantBeta.Settings.Active = true
+    LockController()
 end
 
--- Stop function
 function BlatantBeta.Stop()
-    if not BlatantBeta.Active then 
-        return
-    end
-    
-    BlatantBeta.Active = false
-    
-    safeFire(function()
-        RF_UpdateAutoFishingState:InvokeServer(true)
-    end)
-    
-    task.wait(0.2)
-    
-    safeFire(function()
-        RF_CancelFishingInputs:InvokeServer()
-    end)
+    if not BlatantBeta.Settings.Active then return end
+
+    BlatantBeta.Settings.Active = false
+    RestoreController()
 end
 
 return BlatantBeta

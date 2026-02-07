@@ -1,12 +1,9 @@
 -- ======================================================
--- AUTO FISHING BLATANT (7x CAST → 1x COMPLETE)
--- CLEAN + STABLE VERSION
+-- BLATANT BETA V1 (RAW BURST LOGIC API)
+-- 7x CAST (SPAWN) → 1x COMPLETE
 -- ======================================================
 
--- ================= SERVICES =================
-local RS      = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local player  = Players.LocalPlayer
+local RS = game:GetService("ReplicatedStorage")
 
 -- ================= NET =================
 local Net = RS.Packages._Index["sleitnick_net@0.2.0"].net
@@ -29,24 +26,26 @@ local BlatantBeta = {}
 -- ================= CONFIG =================
 BlatantBeta.Settings = {
     Active        = false,
-    CastDelay     = 0.05, -- jeda antar spam charge+start
-    CompleteDelay = 0.88, -- jeda sebelum complete
+    CastDelay     = 0.05,
+    CompleteDelay = 0.88,
     SpamCount     = 7
 }
 
 -- ================= STATE =================
-local controllerLocked = false
 local busy = false
+local controllerLocked = false
 
 -- ======================================================
--- CONTROLLER LOCK / RESTORE
+-- CONTROLLER LOCK
 -- ======================================================
 local function LockController()
     if controllerLocked then return end
     controllerLocked = true
+
     RF_Cancel:InvokeServer()
     RF_Update:InvokeServer(true)
-    task.wait(0.1)
+    task.wait(0.05)
+
     FC.RequestFishingMinigameClick = function() end
     FC.RequestChargeFishingRod     = function() end
 end
@@ -57,30 +56,30 @@ local function RestoreController()
 
     RF_Cancel:InvokeServer()
     RF_Update:InvokeServer(false)
-    task.wait(0.1)
+    task.wait(0.05)
 
     FC.RequestFishingMinigameClick = originalClick
     FC.RequestChargeFishingRod     = originalCharge
 end
 
 -- ======================================================
--- CORE FISH LOGIC
+-- CORE RAW LOGIC (BURST MODE)
 -- ======================================================
-local function DoFishCycle()
+local function DoFishOnce()
     if busy or not BlatantBeta.Settings.Active then return end
     busy = true
 
     -- reset state
     RF_Cancel:InvokeServer()
 
-    -- 🔥 SPAM CHARGE + START (SEQUENTIAL, NOT SPAWN)
+    -- 🔥 BURST CHARGE + START
     for i = 1, BlatantBeta.Settings.SpamCount do
         if not BlatantBeta.Settings.Active then break end
 
-        --task.spawn(function()
+        task.spawn(function()
             RF_Charge:InvokeServer(math.huge)
             RF_Start:InvokeServer(-1, 0, tick())
-       -- end)
+        end)
 
         task.wait(BlatantBeta.Settings.CastDelay)
     end
@@ -100,14 +99,14 @@ end
 task.spawn(function()
     while true do
         if BlatantBeta.Settings.Active then
-            DoFishCycle()
+            DoFishOnce()
         end
         task.wait(0.01)
     end
 end)
 
 -- ======================================================
--- PUBLIC API
+-- PUBLIC API (DIPANGGIL UI)
 -- ======================================================
 function BlatantBeta.UpdateSettings(castDelay, completeDelay, spamCount)
     if castDelay     ~= nil then BlatantBeta.Settings.CastDelay     = castDelay end
@@ -117,14 +116,12 @@ end
 
 function BlatantBeta.Start()
     if BlatantBeta.Settings.Active then return end
-
     BlatantBeta.Settings.Active = true
     LockController()
 end
 
 function BlatantBeta.Stop()
     if not BlatantBeta.Settings.Active then return end
-
     BlatantBeta.Settings.Active = false
     RestoreController()
 end

@@ -1,5 +1,5 @@
 -- =========================================================
--- NYXHUB FARM TAB
+-- NYXHUB FARM TAB (FIXED VERSION)
 -- =========================================================
 
 if not _G.NYXHUB or not _G.NYXHUB.Window then
@@ -10,25 +10,13 @@ end
 local Window = _G.NYXHUB.Window
 local WindUI = _G.NYXHUB.WindUI
 
--- Load fishing API dari cache NYXHUB
 local AutoClickAPI = _G.NYXHUB.Modules["farm/autoclickAPI.lua"]
-if not AutoClickAPI then
-    warn("[NYXHUB][FarmTab] AutoClickAPI not loaded.")
-    return
-end
 local LegitAPI     = _G.NYXHUB.Modules["farm/legitAPI.lua"]
-if not LegitAPI then
-    warn("[NYXHUB][FarmTab] LegitAPI not loaded.")
-    return
-end
-local AreaAPI = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
-if not AreaAPI then
-    warn("[FarmTab] AreaPositionAPI not loaded")
-    return
-end
-local SkinAPI = _G.NYXHUB.Modules["farm/skinAnimationAPI.lua"]
-if not SkinAPI then
-    warn("[FarmTab] SkinAnimationAPI not loaded")
+local AreaAPI      = _G.NYXHUB.Modules["farm/areapositionAPI.lua"]
+local SkinAPI      = _G.NYXHUB.Modules["farm/skinAnimationAPI.lua"]
+
+if not (AutoClickAPI and LegitAPI and AreaAPI and SkinAPI) then
+    warn("[NYXHUB][FarmTab] Missing module.")
     return
 end
 
@@ -38,54 +26,75 @@ local farm = Window:Tab({
 })
 
 -- =========================================================
--- NYXHUB AUTO CLICK SECTION
+-- AUTO CLICK SECTION
 -- =========================================================
-local auto = farm:Section({ Title = "Auto Click" })
+local auto = farm:Section({ Title = "Auto Click (Controller Based)" })
 
-auto:Slider({
-    Title = "Legit Click Speed",
-    Step = 0.01,
-    Value = { Min = 0.01, Max = 0.5, Default = 0.05 },
-    Callback = LegitAPI.SetSpeed
+auto:Input({
+    Title = "Click Speed (0.01 - 0.5)",
+    Placeholder = "Example: 0.05",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num >= 0.01 and num <= 0.5 then
+            AutoClickAPI.SetSpeed(num)
+            WindUI:Notify({Title="Speed Updated", Content=tostring(num), Duration=2})
+        else
+            WindUI:Notify({Title="Invalid Value", Content="Range 0.01 - 0.5", Duration=2, Icon="x"})
+        end
+    end
 })
 
 auto:Toggle({
-    Title = "Auto Click",
+    Title = "Enable Auto Click",
     Callback = function(v)
-        AutoClickAPI.Stop()
-        if v then LegitAPI.Start() else LegitAPI.Stop() end
+        LegitAPI.Stop()
+        if v then
+            AutoClickAPI.Start()
+        else
+            AutoClickAPI.Stop()
+        end
     end
 })
+
 auto:Divider()
 
 -- =========================================================
--- NYXHUB LEGIT SECTION
+-- INSTANT FISH SECTION
 -- =========================================================
-local legit = farm:Section({ Title = "Legit"})     
+local legit = farm:Section({ Title = "Instant Fish (Remote Based)" })
 
-legit:Slider({
-    Title = "Normal Complete Delay",
-    Step = 0.05,
-    Value = { Min = 0.01, Max = 5, Default = 0.5 },
-    Callback = AutoClickAPI.SetDelay
+legit:Input({
+    Title = "Complete Delay (0.05 - 5)",
+    Placeholder = "Example: 1.5",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num >= 0.05 and num <= 5 then
+            LegitAPI.SetDelay(num)
+            WindUI:Notify({Title="Delay Updated", Content=tostring(num), Duration=2})
+        else
+            WindUI:Notify({Title="Invalid Value", Content="Range 0.05 - 5", Duration=2, Icon="x"})
+        end
+    end
 })
 
 legit:Toggle({
-    Title = "Normal Instant Fish",
+    Title = "Enable Instant Fish",
     Callback = function(v)
-        LegitAPI.Stop()
-        if v then AutoClickAPI.Start() else AutoClickAPI.Stop() end
+        AutoClickAPI.Stop()
+        if v then
+            LegitAPI.Start()
+        else
+            LegitAPI.Stop()
+        end
     end
 })
 legit:Divider()
-
 -- =========================================================
--- NYXHUB AREA SECTION
+-- AREA SECTION
 -- =========================================================
 local areafish = farm:Section({ Title = "Farm Area" })
 
--- DROPDOWN
-dropdown = areafish:Dropdown({
+local dropdown = areafish:Dropdown({
     Title = "Choose Area",
     Values = AreaAPI.GetSortedNames(),
     AllowNone = true,
@@ -94,7 +103,6 @@ dropdown = areafish:Dropdown({
     end
 })
 
--- TELEPORT
 areafish:Button({
     Title = "Teleport to Area",
     Callback = function()
@@ -104,19 +112,17 @@ areafish:Button({
     end
 })
 
--- FREEZE
 areafish:Toggle({
     Title = "Teleport & Freeze",
     Callback = function(v)
         if AreaAPI.Selected then
             AreaAPI.Teleport(AreaAPI.Selected)
-            task.wait(1.5)
+            task.wait(1)
             AreaAPI.SetFreeze(v)
         end
     end
 })
 
--- SAVE
 areafish:Button({
     Title = "Save Current Position",
     Callback = function()
@@ -125,17 +131,17 @@ areafish:Button({
     end
 })
 
--- TELEPORT SAVED
 areafish:Button({
     Title = "Teleport to Saved Pos",
     Callback = function()
         AreaAPI.TeleportSaved()
     end
 })
+
 areafish:Divider()
 
 -- =========================================================
--- NYXHUB SKIN ANIMATION SECTION
+-- SKIN SECTION
 -- =========================================================
 local skinSec = farm:Section({ Title = "Skin Animation" })
 
@@ -154,15 +160,14 @@ skinSec:Dropdown({
 
 skinSec:Toggle({
     Title = "Enable Skin Animation",
-    Value = false,
     Callback = function(on)
         if on then
             SkinAPI.SwitchSkin(current)
             SkinAPI.Enable()
-            WindUI:Notify({Title="Skin ON", Duration=2, Icon="check"})
+            WindUI:Notify({Title="Skin Enabled", Duration=2, Icon="check"})
         else
             SkinAPI.Disable()
-            WindUI:Notify({Title="Skin OFF", Duration=2, Icon="x"})
+            WindUI:Notify({Title="Skin Disabled", Duration=2, Icon="x"})
         end
     end
 })

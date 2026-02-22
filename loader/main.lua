@@ -1,20 +1,43 @@
 -- =========================================================
--- NYXHUB EXECUTOR LOADER (GITHUB MODE)
+-- NYXHUB EXECUTOR LOADER (RELOAD SAFE - GITHUB MODE)
 -- =========================================================
 
-if _G.__NYXHUB_EXECUTED then return end
-_G.__NYXHUB_EXECUTED = true
+-- ================= RELOAD HANDLER =================
+if _G.NYXHUB then
+    pcall(function()
+        if _G.NYXHUB.Window and _G.NYXHUB.Window.Destroy then
+            _G.NYXHUB.Window:Destroy()
+        end
+
+        if _G.NYXHUB.ScreenGui then
+            _G.NYXHUB.ScreenGui:Destroy()
+        end
+    end)
+
+    _G.NYXHUB = nil
+end
+
+-- ================= GLOBAL INIT =================
+_G.NYXHUB = {
+    Modules = {},
+    Flags = {}
+}
 
 -- ================= CONFIG =================
 local GITHUB_RAW = "https://raw.githubusercontent.com/NYXOXOV3/qwrqscfw/main/"
+local Version = "1.6.63"
 
 -- ================= SERVICES =================
+local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
 
--- ================= UI CORE =================
-local Version = "1.6.63"
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
+-- ================= LOAD WINDUI =================
+local WindUI = loadstring(
+    game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua")
+)()
 
+-- ================= CREATE WINDOW =================
 local Window = WindUI:CreateWindow({
     Title = "NYXHUB - Fish It",
     Icon = "rbxassetid://137263312772667",
@@ -27,30 +50,19 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 190,
     Transparent = true,
 })
+
 Window:SetToggleKey(Enum.KeyCode.G)
 Window:Tag({
     Title = "v1.0.3",
-    Color = Color3.fromRGB(0, 255, 0),
+    Color = Color3.fromRGB(0,255,0),
 })
--- ================= NOTIFICATION CONTEXT =================
-game.StarterGui:SetCore("SendNotification", {
-    Title = "NYXHUB",
-    Icon = "rbxassetid://137263312772667",
-    Text = "Loading script...",
-    Duration = 2
-})
--- ================= GLOBAL CONTEXT =================
-_G.NYXHUB = {
-    Window = Window,
-    WindUI = WindUI,
-    Modules = {},
-    Flags = {},
-}
+
+_G.NYXHUB.Window = Window
+_G.NYXHUB.WindUI = WindUI
 
 -- ================= SAFE HTTP LOAD =================
 local function httpLoad(path)
-    local url = GITHUB_RAW .. path
-    local ok, src = pcall(game.HttpGet, game, url)
+    local ok, src = pcall(game.HttpGet, game, GITHUB_RAW .. path)
     if not ok or not src then
         warn("[NYXHUB][HTTP FAIL]:", path)
         return nil
@@ -65,20 +77,8 @@ local function httpLoad(path)
     return fn()
 end
 
-pcall(function()
-    local player = game:GetService("Players").LocalPlayer
- 
-    -- Cek semua koneksi yang terhubung ke event Idled pemain lokal
-    for i, v in pairs(getconnections(player.Idled)) do
-        if v.Disable then
-            v:Disable() -- Menonaktifkan koneksi event
-            print("[NYXHUB Anti-AFK] ON")
-        end
-    end
-end)
-
 -- =================================================
--- 1️⃣ SECURITY (FIRST)
+-- SECURITY LOAD
 -- =================================================
 local Security = httpLoad("security/SecurityLoader.lua")
 if Security and Security.Init then
@@ -87,35 +87,20 @@ end
 _G.NYXHUB.Modules.Security = Security
 
 -- =================================================
--- 2️⃣ METHOD API LOADER
+-- LOAD METHODS
 -- =================================================
 local METHOD_LIST = {
     "info/infoAPI.lua",
-
-    --"setting/configAPI.lua",
     "setting/securityAPI.lua",
     "setting/movementAPI.lua",
     "setting/modesAPI.lua",
     "setting/visualAPI.lua",
-    --"setting/externalAPI.lua",
-    --"setting/resetAPI.lua",
-
     "farm/autoclickAPI.lua",
     "farm/blatantv1.lua",
     "farm/legitAPI.lua",
-    --"farm/legit1API.lua",
-    --"farm/legit2API.lua",
     "farm/blatantAPI.lua",
-    --"farm/blatant1API.lua",
-    --"farm/blatant2API.lua",
-    --"farm/blatant3API.lua",
-    --"farm/blatant4API.lua",
-    --"farm/blatant5API.lua",
-    --"farm/blatant6API.lua",
-    --"farm/fastperfectAPI.lua",
     "farm/areapositionAPI.lua",
     "farm/skinAnimationAPI.lua",
-
     "automatic/autosellAPI.lua",
     "automatic/autofavoritAPI.lua",
     "automatic/autotradeAPI.lua",
@@ -123,28 +108,21 @@ local METHOD_LIST = {
     "automatic/autosecenchantAPI.lua",
     "automatic/autoweatherAPI.lua",
     "automatic/autototemAPI.lua",
-
     "quest/ghostfinAPI.lua",
     "quest/eleAPI.lua",
     "quest/diamondAPI.lua",
-
     "webhook/webhookAPI.lua",
-
     "util/gearAPI.lua",
     "util/equiptAPI.lua",
-
     "shop/gearAPI.lua",
     "shop/teleportAPI.lua",
     "shop/merchantAPI.lua",
-
     "teleport/locationAPI.lua",
     "teleport/playerAPI.lua",
-
     "event/admineventAPI.lua",
     "event/lochnessAPI.lua",
     "event/gameeventAPI.lua",
     "event/piratechestAPI.lua",
-
     "exclusive/templelaverAPI.lua",
     "exclusive/ruindoorAPI.lua",
     "exclusive/kaitunAPI.lua",
@@ -159,7 +137,7 @@ for _, path in ipairs(METHOD_LIST) do
 end
 
 -- =================================================
--- 3️⃣ UI TABS (EXECUTE)
+-- LOAD UI TABS
 -- =================================================
 local UI_TABS = {
     "infoTab.lua",
@@ -176,129 +154,47 @@ local UI_TABS = {
 }
 
 for _, tab in ipairs(UI_TABS) do
-    local ok, err = pcall(function()
+    pcall(function()
         loadstring(game:HttpGet(GITHUB_RAW .. "ui/" .. tab))()
     end)
-    if not ok then
-        warn("[NYXHUB][UI TAB ERROR]:", tab, err)
-    end
 end
 
----------------------------------------------------------------------
--- === FLOATING MOBILE BUTTON (NYX THEME - DARK PURPLE) ===
----------------------------------------------------------------------
-
-local Players = game:GetService("Players")
-local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-
+-- =================================================
+-- FLOATING BUTTON
+-- =================================================
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NYX_FloatingBtn"
-screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+_G.NYXHUB.ScreenGui = screenGui
 
 local btn = Instance.new("ImageButton")
-btn.Name = "NYXButton"
-btn.Size = UDim2.new(0, 55, 0, 55)  -- Diperkecil dari 70px ke 55px
-
--- Posisi tengah layar kanan
-btn.AnchorPoint = Vector2.new(0.5, 0.5)
-btn.Position = UDim2.new(0.95, 0, 0.50, 0)
-
--- Warna ungu malam (Nyx theme) - lebih dalam & mistis
-btn.BackgroundColor3 = Color3.fromRGB(45, 15, 65)  -- Deep night purple
+btn.Size = UDim2.new(0,55,0,55)
+btn.AnchorPoint = Vector2.new(0.5,0.5)
+btn.Position = UDim2.new(0.95,0,0.5,0)
+btn.BackgroundColor3 = Color3.fromRGB(45,15,65)
 btn.Image = "rbxassetid://137263312772667"
-btn.ImageColor3 = Color3.fromRGB(220, 180, 255)  -- Sedikit terang untuk ikon
-btn.BorderSizePixel = 0
-btn.Visible = true
 btn.Parent = screenGui
 
--- Corner lembut (disesuaikan proporsional dengan ukuran baru)
-local corner = Instance.new("UICorner", btn)
-corner.CornerRadius = UDim.new(0, 12)  -- Sedikit lebih bulat untuk estetika
-
--- Stroke subtle dengan glow halus ala dewi malam
-local stroke = Instance.new("UIStroke", btn)
-stroke.Thickness = 1.5
-stroke.Color = Color3.fromRGB(120, 60, 180)  -- Violet gelap bercahaya
-stroke.Transparency = 0.2  -- Sedikit transparan untuk efek glow lembut
-
--- Opsional: Gradient dalam untuk kedalaman magis
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(65, 30, 95)),
-    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(45, 15, 65))
-})
-gradient.Rotation = 45
-gradient.Parent = btn
-
----------------------------------------------------------------------
--- === DRAG SUPPORT (tetap responsif meski lebih kecil) ===
----------------------------------------------------------------------
-
-local UIS = game:GetService("UserInputService")
-local dragging = false
-local dragStart, startPos
-
-btn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch
-    or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = btn.Position
-    end
-end)
-
-btn.InputChanged:Connect(function(input)
-    if dragging and (
-        input.UserInputType == Enum.UserInputType.Touch or
-        input.UserInputType == Enum.UserInputType.MouseMovement
-    ) then
-        local delta = input.Position - dragStart
-
-        btn.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch
-    or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
----------------------------------------------------------------------
--- === TOGGLE & SINKRONISASI WINDOW ===
----------------------------------------------------------------------
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
 
 btn.MouseButton1Click:Connect(function()
-    if Window then
-        Window:Toggle()
-    end
+    Window:Toggle()
 end)
 
-if Window then
-    Window:OnClose(function()
-        btn.Visible = true
-    end)
-
-    Window:OnOpen(function()
-        btn.Visible = true
-    end)
-
-    Window:OnDestroy(function()
-        print("Window Destroyed")
-        pcall(function()
-            btn:Destroy()
+-- =================================================
+-- CLEANUP ON DESTROY
+-- =================================================
+Window:OnDestroy(function()
+    pcall(function()
+        if screenGui then
             screenGui:Destroy()
-        end)
+        end
     end)
-end
+end)
+
 -- =================================================
 -- READY
 -- =================================================
@@ -306,9 +202,9 @@ _G.NYXHUB.Flags.Ready = true
 
 WindUI:Notify({
     Title = "NYXHUB Ready",
-    Content = "Loaded from GitHub repository",
+    Content = "Reload Safe Mode Active",
     Duration = 3,
     Icon = "check",
 })
 
-print("[NYXHUB] Loaded fully from GitHub.")
+print("[NYXHUB] Loaded (Reload Safe)")

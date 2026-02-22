@@ -51,7 +51,6 @@ function LegitAPI.Start()
             task.wait(LegitAPI.Delay)
 
             pcall(function() RF_Done:InvokeServer() end)
-            pcall(function() RF_Cancel:InvokeServer() end)
         end
     end)
 end

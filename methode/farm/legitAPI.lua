@@ -48,13 +48,6 @@ function LegitAPI.Start()
 
         end
     end)
-
-    equipThread = task.spawn(function()
-        while LegitAPI.Enabled do
-            pcall(function() RE_Equip:FireServer(1) end)
-            task.wait(0.1)
-        end
-    end)
 end
 
 function LegitAPI.Stop()

@@ -5,7 +5,6 @@
 local LegitAPI = {}
 
 -- ================= SERVICES =================
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ================= REMOTES =================
@@ -31,18 +30,22 @@ function LegitAPI.Start()
     if LegitAPI.Enabled then return end
     LegitAPI.Enabled = true
 
-    -- 🔥 Equip sekali di awal
-    pcall(function()
-        RE_Equip:FireServer(1)
-    end)
-
     loopThread = task.spawn(function()
+        local equipped = false
+
         while LegitAPI.Enabled do
-            local ts = os.time() + os.clock()
+            -- 🔥 Equip hanya sekali di awal loop
+            if not equipped then
+                pcall(function()
+                    RE_Equip:FireServer(1)
+                end)
+                equipped = true
+                task.wait(0.1) -- kasih delay kecil biar tool ready
+            end
 
             pcall(function()
-                RF_Charge:InvokeServer({ts})
-                RF_Start:InvokeServer(1, 0, ts)
+                RF_Charge:InvokeServer({tick()})
+                RF_Start:InvokeServer(1, 0, tick())
             end)
 
             task.wait(LegitAPI.Delay)

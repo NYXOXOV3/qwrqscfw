@@ -16,7 +16,7 @@ local Net = ReplicatedStorage
     :WaitForChild("net")
 
 local RF_Charge = Net["RF/FlgK:h oAkCC= D6"]
-local RF_Start = Net["RF/UiwN8vNL7vB>D5\";pA5;A7$B3Jx8>"]
+local RF_Start  = Net["RF/UiwN8vNL7vB>D5\";pA5;A7$B3Jx8>"]
 local RF_Done   = Net["RF/Fez<;ICy6FIBF::Fg<"]
 local RF_Cancel = Net["RF/Fet<8o oAkCC=vCBwLA"]
 local RE_Equip  = Net["RE/Hu{BCWIu:ILDCuDFd9@"]
@@ -25,12 +25,16 @@ local RE_Equip  = Net["RE/Hu{BCWIu:ILDCuDFd9@"]
 LegitAPI.Enabled = false
 LegitAPI.Delay = 1.50
 local loopThread
-local equipThread
 
 -- ================= CORE =================
 function LegitAPI.Start()
     if LegitAPI.Enabled then return end
     LegitAPI.Enabled = true
+
+    -- 🔥 Equip sekali di awal
+    pcall(function()
+        RE_Equip:FireServer(1)
+    end)
 
     loopThread = task.spawn(function()
         while LegitAPI.Enabled do
@@ -45,16 +49,16 @@ function LegitAPI.Start()
 
             pcall(function() RF_Done:InvokeServer() end)
             pcall(function() RF_Cancel:InvokeServer() end)
-
         end
     end)
 end
 
 function LegitAPI.Stop()
     LegitAPI.Enabled = false
-    if loopThread then task.cancel(loopThread) end
-    if equipThread then task.cancel(equipThread) end
-    loopThread, equipThread = nil, nil
+    if loopThread then
+        task.cancel(loopThread)
+        loopThread = nil
+    end
 end
 
 function LegitAPI.SetDelay(v)

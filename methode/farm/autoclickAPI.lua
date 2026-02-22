@@ -15,11 +15,11 @@ local Net = ReplicatedStorage
     :WaitForChild("sleitnick_net@0.2.0")
     :WaitForChild("net")
 
-local RF_Charge = Net["RF/ChargeFishingRod"]
-local RF_Start  = Net["RF/RequestFishingMinigameStarted"]
+local RF_Charge = Net["RF/FlgK:h oAkCC= D6"]
+local RF_Start = Net["RF/UiwN8vNL7vB>D5\";pA5;A7$B3Jx8>"]
 --local RE_Done   = Net["RE/FishingCompleted"]
-local RF_Done   = Net["RF/CatchFishCompleted"]
-local RF_Cancel = Net["RF/CancelFishingInputs"]
+local RF_Done   = Net["RF/Fez<;ICy6FIBF::Fg<"]
+local RF_Cancel = Net["RF/Fet<8o oAkCC=vCBwLA"]
 local RE_Equip  = Net["RE/EquipToolFromHotbar"]
 
 -- ================= STATE =================

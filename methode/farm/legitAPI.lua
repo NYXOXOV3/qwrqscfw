@@ -22,7 +22,7 @@ local RE_Equip  = Net["RE/Hu{BCWIu:ILDCuDFd9@"]
 
 -- ================= STATE =================
 LegitAPI.Enabled = false
-LegitAPI.Delay = 1.50
+LegitAPI.Delay = 1
 local loopThread
 
 -- ================= CORE =================
@@ -45,7 +45,7 @@ function LegitAPI.Start()
 
             pcall(function()
                 RF_Charge:InvokeServer({tick()})
-                RF_Start:InvokeServer(1, 0, tick())
+                RF_Start:InvokeServer(-1, 0.999, tick())
             end)
 
             task.wait(LegitAPI.Delay)

@@ -18,7 +18,7 @@ local FishingController = require(
 local Net = ReplicatedStorage
     .Packages._Index["sleitnick_net@0.2.0"].net
 
-local RE_Equip = Net["RE/EquipToolFromHotbar"]
+local RE_Equip = Net["RE/Hu{BCWIu:ILDCuDFd9@"]
 local RF_Update = Net["RF/Xtj:Ghz{Br >I6>@i+B;H7"]
 
 -- ================= STATE =================

@@ -28,11 +28,11 @@ local farm = Window:Tab({
 -- =========================================================
 -- AUTO CLICK SECTION
 -- =========================================================
-local auto = farm:Section({ Title = "Auto Click (Controller Based)" })
+local auto = farm:Section({ Title = "Auto Click" })
 
 auto:Input({
-    Title = "Click Speed (0.01 - 0.5)",
-    Placeholder = "Example: 0.05",
+    Title = "Click Speed",
+    Placeholder = "0.05",
     Callback = function(text)
         local num = tonumber(text)
         if num and num >= 0.01 and num <= 0.5 then
@@ -61,11 +61,11 @@ auto:Divider()
 -- =========================================================
 -- INSTANT FISH SECTION
 -- =========================================================
-local legit = farm:Section({ Title = "Instant Fish (Remote Based)" })
+local legit = farm:Section({ Title = "Instant Fish" })
 
 legit:Input({
-    Title = "Complete Delay (0.05 - 5)",
-    Placeholder = "Example: 1.5",
+    Title = "Complete Delay",
+    Placeholder = "1.5",
     Callback = function(text)
         local num = tonumber(text)
         if num and num >= 0.05 and num <= 5 then

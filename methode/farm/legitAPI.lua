@@ -38,7 +38,7 @@ function LegitAPI.Start()
 
             pcall(function()
                 RF_Charge:InvokeServer(ts)
-                RF_Start:InvokeServer(-57.994, 0.999)
+                RF_Start:InvokeServer(1, 0, tick())
             end)
 
             task.wait(LegitAPI.Delay)

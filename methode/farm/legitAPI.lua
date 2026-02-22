@@ -19,7 +19,7 @@ local RF_Charge = Net["RF/FlgK:h oAkCC= D6"]
 local RF_Start = Net["RF/UiwN8vNL7vB>D5\";pA5;A7$B3Jx8>"]
 local RF_Done   = Net["RF/Fez<;ICy6FIBF::Fg<"]
 local RF_Cancel = Net["RF/Fet<8o oAkCC=vCBwLA"]
-local RE_Equip  = Net["RE/EquipToolFromHotbar"]
+local RE_Equip  = Net["RE/Hu{BCWIu:ILDCuDFd9@"]
 
 -- ================= STATE =================
 LegitAPI.Enabled = false

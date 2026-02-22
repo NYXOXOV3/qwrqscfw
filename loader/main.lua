@@ -32,7 +32,13 @@ Window:Tag({
     Title = "v1.0.3",
     Color = Color3.fromRGB(0, 255, 0),
 })
-
+-- ================= NOTIFICATION CONTEXT =================
+game.StarterGui:SetCore("SendNotification", {
+    Title = "NYXHUB",
+    Icon = "rbxassetid://137263312772667",
+    Text = "Loading script...",
+    Duration = 2
+})
 -- ================= GLOBAL CONTEXT =================
 _G.NYXHUB = {
     Window = Window,

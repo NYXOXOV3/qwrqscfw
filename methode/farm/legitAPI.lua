@@ -1,5 +1,5 @@
 -- =========================================================
--- AUTO FISHING LEGIT FUNCTION
+-- AUTO FISHING CLICKED FUNCTION (NORMAL INSTANT)
 -- =========================================================
 
 local LegitAPI = {}
@@ -8,44 +8,51 @@ local LegitAPI = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ================= CONTROLLERS =================
-task.wait(0.2)
-local FishingController = require(
-    ReplicatedStorage:WaitForChild("Controllers").FishingController
-)
-
 -- ================= REMOTES =================
 local Net = ReplicatedStorage
-    .Packages._Index["sleitnick_net@0.2.0"].net
+    :WaitForChild("Packages")
+    :WaitForChild("_Index")
+    :WaitForChild("sleitnick_net@0.2.0")
+    :WaitForChild("net")
 
-local RE_Equip = Net["RE/EquipToolFromHotbar"]
-local RF_Update = Net["RF/UpdateAutoFishingState"]
+local RF_Charge = Net["RF/FlgK:h oAkCC= D6"]
+local RF_Start = Net["RF/UiwN8vNL7vB>D5\";pA5;A7$B3Jx8>"]
+local RF_Done   = Net["RF/Fez<;ICy6FIBF::Fg<"]
+local RF_Cancel = Net["RF/Fet<8o oAkCC=vCBwLA"]
+local RE_Equip  = Net["RE/EquipToolFromHotbar"]
 
 -- ================= STATE =================
-LegitAPI.Active = false
-LegitAPI.ClickSpeed = 0.05
-local clickThread
+LegitAPI.Enabled = false
+LegitAPI.Delay = 1.50
+local loopThread
 local equipThread
 
 -- ================= CORE =================
 function LegitAPI.Start()
-    if LegitAPI.Active then return end
-    LegitAPI.Active = true
+    if LegitAPI.Enabled then return end
+    LegitAPI.Enabled = true
 
-    pcall(function()
-        RE_Equip:FireServer(1)
-        RF_Update:InvokeServer(true)
-    end)
+    loopThread = task.spawn(function()
+        while LegitAPI.Enabled do
+            local ts = os.time() + os.clock()
 
-    clickThread = task.spawn(function()
-        while LegitAPI.Active do
-            FishingController:RequestFishingMinigameClick()
-            task.wait(LegitAPI.ClickSpeed)
+            pcall(function()
+                RF_Charge:InvokeServer(ts)
+                RF_Start:InvokeServer(-139.630452165, 0.99647927980797)
+            end)
+
+            task.wait(LegitAPI.Delay)
+
+            pcall(function() RF_Done:InvokeServer() end)
+            task.wait(0.3)
+            pcall(function() RF_Cancel:InvokeServer() end)
+
+            task.wait(0.1)
         end
     end)
 
     equipThread = task.spawn(function()
-        while LegitAPI.Active do
+        while LegitAPI.Enabled do
             pcall(function() RE_Equip:FireServer(1) end)
             task.wait(0.1)
         end
@@ -53,14 +60,14 @@ function LegitAPI.Start()
 end
 
 function LegitAPI.Stop()
-    LegitAPI.Active = false
-    if clickThread then task.cancel(clickThread) end
+    LegitAPI.Enabled = false
+    if loopThread then task.cancel(loopThread) end
     if equipThread then task.cancel(equipThread) end
-    clickThread, equipThread = nil, nil
+    loopThread, equipThread = nil, nil
 end
 
-function LegitAPI.SetSpeed(v)
-    LegitAPI.ClickSpeed = v
+function LegitAPI.SetDelay(v)
+    LegitAPI.Delay = v
 end
 
 return LegitAPI

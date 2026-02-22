@@ -44,7 +44,7 @@ function LegitAPI.Start()
             end
 
             pcall(function()
-                RF_Charge:InvokeServer({tick()})
+                RF_Charge:InvokeServer(nil,nil,tick(),nil)
                 RF_Start:InvokeServer(-0.98799896240234, 0.9898571008228, tick())
             end)
 

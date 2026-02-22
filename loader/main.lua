@@ -59,6 +59,18 @@ local function httpLoad(path)
     return fn()
 end
 
+pcall(function()
+    local player = game:GetService("Players").LocalPlayer
+ 
+    -- Cek semua koneksi yang terhubung ke event Idled pemain lokal
+    for i, v in pairs(getconnections(player.Idled)) do
+        if v.Disable then
+            v:Disable() -- Menonaktifkan koneksi event
+            print("[NYXHUB Anti-AFK] ON")
+        end
+    end
+end)
+
 -- =================================================
 -- 1️⃣ SECURITY (FIRST)
 -- =================================================
